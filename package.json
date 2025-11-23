@@ -1,6 +1,6 @@
 {
     "name": "planshake",
-    "version": "0.1.1",
+    "version": "0.1.2",
     "description": "PlanShake - Project Management Application",
     "main": "main.js",
     "scripts": {
@@ -48,7 +48,7 @@
                     ]
                 }
             ],
-            "icon": "PlanShake512x512.png",
+            "icon": "website/PlanShake512x512.png",
             "publish": [
                 {
                     "provider": "github",
@@ -59,7 +59,7 @@
         },
         "mac": {
             "target": "dmg",
-            "icon": "PlanShake512x512.png",
+            "icon": "website/PlanShake512x512.png",
             "publish": [
                 {
                     "provider": "github",
@@ -70,7 +70,7 @@
         },
         "linux": {
             "target": "AppImage",
-            "icon": "PlanShake512x512.png",
+            "icon": "website/PlanShake512x512.png",
             "publish": [
                 {
                     "provider": "github",

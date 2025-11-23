@@ -120,11 +120,6 @@
       margin-top: 32px;
     }
     
-    /* Adjust modal backdrop to cover everything */
-    .modal-backdrop {
-      z-index: 9998;
-    }
-    
     .modal {
       z-index: 10000; /* Above titlebar if needed, or adjust titlebar z-index */
     }

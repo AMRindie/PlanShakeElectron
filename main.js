@@ -40,14 +40,14 @@ function createSplashWindow() {
     transparent: true,
     frame: false,
     alwaysOnTop: true,
-    icon: path.join(__dirname, 'PlanShake512x512.png'),
+    icon: path.join(__dirname, 'website', 'PlanShake512x512.png'),
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true
     }
   });
 
-  splashWindow.loadFile('splash.html');
+  splashWindow.loadFile('website/splash.html');
   splashWindow.center();
 }
 
@@ -58,7 +58,7 @@ function createWindow() {
     height: 900,
     minWidth: 800,
     minHeight: 600,
-    icon: path.join(__dirname, 'PlanShake512x512.png'),
+    icon: path.join(__dirname, 'website', 'PlanShake512x512.png'),
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
@@ -87,7 +87,7 @@ function createWindow() {
   });
 
   // Load the index.html of the app
-  mainWindow.loadFile('index.html');
+  mainWindow.loadFile('website/index.html');
 
   // Show window when ready to prevent visual flash
   mainWindow.once('ready-to-show', () => {
