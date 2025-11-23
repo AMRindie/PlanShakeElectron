@@ -1,0 +1,128 @@
+﻿<!DOCTYPE html>
+<html lang="en" data-page="home">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Project Hub</title>
+  <link rel="icon" href="PlanShake512x512.png" type="image/x-icon">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <link rel="manifest" href="manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="PlanShake">
+  <link rel="apple-touch-icon" href="PlanShake192x192.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+</head>
+
+<body>
+  <header class="app-header">
+    <div class="logo">
+      <span class="logo-icon">✨</span> Project Hub
+    </div>
+    <div class="header-actions">
+      <div class="home-actions">
+        <button id="addProjectBtn" class="primary-btn">+ New Project</button>
+        <button id="exportBtn" class="secondary-btn">Export</button>
+        <button id="importAllBtn" class="secondary-btn import-trigger">Import</button>
+      </div>
+      <div class="theme-switcher hidden">
+        <select id="themeSelect">
+          <option value="modern">Modern</option>
+        </select>
+      </div>
+    </div>
+  </header>
+
+  <input type="file" id="importFile" accept=".json" hidden />
+
+  <main class="home-main">
+    <section class="home-intro">
+      <div class="intro-text">
+        <h1>Your Workspace</h1>
+        <p>
+          Manage your boards, brainstorm ideas, and track progress in one beautiful place.
+        </p>
+      </div>
+    </section>
+
+    <section id="projectsContainer" class="projects-grid">
+    </section>
+  </main>
+
+  <div id="projectEditModal" class="modal hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Project Details</h3>
+      </div>
+
+      <div class="modal-body">
+        <div class="modal-section">
+          <label for="projectEditName">Project Title</label>
+          <input id="projectEditName" class="modal-title-input" placeholder="e.g. Q4 Marketing Plan" />
+        </div>
+
+        <div class="modal-section">
+          <label>Icon</label>
+          <div class="icon-picker project-edit-icons">
+            <!-- Icons injected via JS -->
+          </div>
+        </div>
+        <div class="modal-section">
+          <label>Theme Color</label>
+          <div class="cover-picker project-edit-covers">
+            <div class="cover-swatch cover-blue" data-cover="blue"></div>
+            <div class="cover-swatch cover-purple" data-cover="purple"></div>
+            <div class="cover-swatch cover-green" data-cover="green"></div>
+            <div class="cover-swatch cover-orange" data-cover="orange"></div>
+            <div class="cover-swatch cover-dark" data-cover="dark"></div>
+          </div>
+        </div>
+        <div class="modal-section hidden">
+          <label for="projectEditBackground">Board background</label>
+          <select id="projectEditBackground">
+            <option value="none">Default</option>
+          </select>
+        </div>
+
+        <div class="modal-section">
+          <label for="projectEditDescription">Description</label>
+          <textarea id="projectEditDescription" rows="3" placeholder="Briefly describe the goals..."></textarea>
+        </div>
+
+        <div class="modal-section">
+          <label>Status</label>
+          <div class="status-options">
+            <button type="button" data-status="active" class="status-pill">Active</button>
+            <button type="button" data-status="todo" class="status-pill">To Do</button>
+            <button type="button" data-status="finished" class="status-pill">Finished</button>
+          </div>
+        </div>
+
+        <div class="modal-section">
+          <label>Tags</label>
+          <input id="projectEditTags" type="text" placeholder="design, dev, urgency..." />
+          <small>Comma separated</small>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="modalImportBtn" class="secondary-btn import-trigger">Import JSON</button>
+        <div class="spacer"></div>
+        <button id="closeProjectEditBtn" class="secondary-btn">Cancel</button>
+        <button id="saveProjectEditBtn" class="primary-btn">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.data.js"></script>
+  <script src="app.whiteboard.js"></script>
+  <script src="app.js"></script>
+  <script src="app.updater.js"></script>
+  <script src="https://bernardo-castilho.github.io/DragDropTouch/DragDropTouch.js"></script>
+</body>
+
+</html>
