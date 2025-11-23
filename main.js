@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, Menu, shell, dialog } = require('electron');
 const path = require('path');
 
 // Import auto-updater only in production
@@ -7,16 +7,148 @@ let autoUpdater;
 const isDev = process.defaultApp || /[\\/]electron-prebuilt[\\/]/.test(process.execPath) || /[\\/]electron[\\/]/.test(process.execPath);
 
 if (!isDev) {
-  autoUpdater = require('electron-updater').autoUpdater;
-  // Configure auto-updater
-  autoUpdater.autoDownload = false;
-  autoUpdater.autoInstallOnAppQuit = true;
+  try {
+    autoUpdater = require('electron-updater').autoUpdater;
+    // Configure auto-updater
+    autoUpdater.autoDownload = false;
+    autoUpdater.autoInstallOnAppQuit = true;
+    console.log('Auto-updater loaded successfully');
+  } catch (error) {
+    console.error('Failed to load electron-updater:', error.message);
+    console.log('Auto-update functionality will be disabled');
+    autoUpdater = null;
+  }
 } else {
   console.log('Running in development mode - auto-updater disabled');
 }
 
 // Keep a global reference of the window object
 let mainWindow;
+
+// Create native application menu - DISABLED per user request
+/*
+function createMenu() {
+  const template = [
+    {
+      label: 'File',
+      submenu: [
+        {
+          label: 'New Project',
+          accelerator: 'CmdOrCtrl+N',
+          click: () => {
+            mainWindow.webContents.send('menu-new-project');
+          }
+        },
+        { type: 'separator' },
+        {
+          label: 'Export',
+          accelerator: 'CmdOrCtrl+E',
+          click: () => {
+            mainWindow.webContents.send('menu-export');
+          }
+        },
+        {
+          label: 'Import',
+          accelerator: 'CmdOrCtrl+I',
+          click: () => {
+            mainWindow.webContents.send('menu-import');
+          }
+        },
+        { type: 'separator' },
+        {
+          label: 'Exit',
+          accelerator: 'Alt+F4',
+          click: () => {
+            app.quit();
+          }
+        }
+      ]
+    },
+    {
+      label: 'Edit',
+      submenu: [
+        { role: 'undo' },
+        { role: 'redo' },
+        { type: 'separator' },
+        { role: 'cut' },
+        { role: 'copy' },
+        { role: 'paste' },
+        { role: 'delete' },
+        { type: 'separator' },
+        { role: 'selectAll' }
+      ]
+    },
+    {
+      label: 'View',
+      submenu: [
+        { role: 'reload' },
+        { role: 'forceReload' },
+        { type: 'separator' },
+        { role: 'resetZoom' },
+        { role: 'zoomIn' },
+        { role: 'zoomOut' },
+        { type: 'separator' },
+        { role: 'togglefullscreen' }
+      ]
+    },
+    {
+      label: 'Help',
+      submenu: [
+        {
+          label: 'Check for Updates',
+          click: () => {
+            if (!isDev && autoUpdater) {
+              autoUpdater.checkForUpdates();
+            } else {
+              dialog.showMessageBox(mainWindow, {
+                type: 'info',
+                title: 'Updates',
+                message: 'You are running the latest version.',
+                buttons: ['OK']
+              });
+            }
+          }
+        },
+        { type: 'separator' },
+        {
+          label: 'About PlanShake',
+          click: () => {
+            dialog.showMessageBox(mainWindow, {
+              type: 'info',
+              title: 'About PlanShake',
+              message: 'PlanShake',
+              detail: `Version: ${app.getVersion()}\nA beautiful project management application.`,
+              buttons: ['OK']
+            });
+          }
+        }
+      ]
+    }
+  ];
+
+  // Add Developer menu in development mode
+  if (isDev) {
+    template.push({
+      label: 'Developer',
+      submenu: [
+        { role: 'toggleDevTools' },
+        { type: 'separator' },
+        {
+          label: 'Reload',
+          accelerator: 'F5',
+          click: () => {
+            mainWindow.reload();
+          }
+        }
+      ]
+    });
+  }
+
+  const menu = Menu.buildFromTemplate(template);
+  Menu.setApplicationMenu(menu);
+}
+*/
+
 
 function createWindow() {
   // Create the browser window
@@ -29,10 +161,27 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      preload: path.join(__dirname, 'preload.js')
+      preload: path.join(__dirname, 'preload.js'),
+      // Disable web security features that make it feel like a browser
+      webSecurity: true,
+      // Enable native window features
+      enableRemoteModule: false,
+      // Better performance
+      backgroundThrottling: false
     },
     backgroundColor: '#1a1a2e',
-    show: false
+    show: false,
+    // Native window features
+    frame: true,
+    titleBarStyle: 'default',
+    // Windows-specific
+    autoHideMenuBar: true, // Hide menu bar (user doesn't want it)
+    // Better window behavior
+    center: true,
+    resizable: true,
+    maximizable: true,
+    minimizable: true,
+    closable: true
   });
 
   // Load the index.html of the app
@@ -41,16 +190,49 @@ function createWindow() {
   // Show window when ready to prevent visual flash
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();
+    mainWindow.focus();
   });
 
-  // Open DevTools in development (optional - comment out for production)
-  if (isDev) {
-    mainWindow.webContents.openDevTools();
-  }
+  // Open external links in default browser (not in app)
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    shell.openExternal(url);
+    return { action: 'deny' };
+  });
+
+  // Prevent navigation away from app
+  mainWindow.webContents.on('will-navigate', (event, url) => {
+    const appUrl = mainWindow.webContents.getURL();
+    if (!url.startsWith('file://')) {
+      event.preventDefault();
+      shell.openExternal(url);
+    }
+  });
+
+  // Handle window close
+  mainWindow.on('close', (event) => {
+    // You can add confirmation dialog here if needed
+    // event.preventDefault();
+    // dialog.showMessageBox(...)
+  });
 
   // Emitted when the window is closed
   mainWindow.on('closed', function () {
     mainWindow = null;
+  });
+
+  // Create native menu - DISABLED per user request
+  // createMenu();
+
+  // Remove default menu on right-click (optional - makes it feel less like browser)
+  mainWindow.webContents.on('context-menu', (event, params) => {
+    // You can create a custom context menu here if needed
+  });
+
+  // Disable zoom with Ctrl+Scroll (browser behavior)
+  mainWindow.webContents.on('before-input-event', (event, input) => {
+    if (input.control && input.type === 'mouseWheel') {
+      event.preventDefault();
+    }
   });
 }
 
@@ -130,36 +312,65 @@ if (ipcMain) {
       console.log('Auto-updater not available in development mode');
     }
   });
+
+  // Handle external link clicks
+  ipcMain.on('open-external', (event, url) => {
+    shell.openExternal(url);
+  });
+
+  // Handle file dialogs (native feel)
+  ipcMain.handle('show-open-dialog', async (event, options) => {
+    return dialog.showOpenDialog(mainWindow, options);
+  });
+
+  ipcMain.handle('show-save-dialog', async (event, options) => {
+    return dialog.showSaveDialog(mainWindow, options);
+  });
 }
 
 // App lifecycle events
 if (app) {
-  app.whenReady().then(() => {
-    createWindow();
+  // Single instance lock (prevent multiple instances)
+  const gotTheLock = app.requestSingleInstanceLock();
 
-    // Check for updates after app is ready (wait 3 seconds) - only in production
-    if (!isDev && autoUpdater) {
-      setTimeout(() => {
-        autoUpdater.checkForUpdates();
-      }, 3000);
-    }
-
-    app.on('activate', function () {
-      // On macOS it's common to re-create a window in the app when the
-      // dock icon is clicked and there are no other windows open.
-      if (BrowserWindow.getAllWindows().length === 0) createWindow();
+  if (!gotTheLock) {
+    app.quit();
+  } else {
+    app.on('second-instance', (event, commandLine, workingDirectory) => {
+      // Someone tried to run a second instance, focus our window
+      if (mainWindow) {
+        if (mainWindow.isMinimized()) mainWindow.restore();
+        mainWindow.focus();
+      }
     });
-  });
 
-  // Quit when all windows are closed, except on macOS
-  app.on('window-all-closed', function () {
-    if (process.platform !== 'darwin') app.quit();
-  });
+    app.whenReady().then(() => {
+      createWindow();
 
-  // Check for updates every hour - only in production
-  if (!isDev && autoUpdater) {
-    setInterval(() => {
-      autoUpdater.checkForUpdates();
-    }, 60 * 60 * 1000);
+      // Check for updates after app is ready (wait 3 seconds) - only in production
+      if (!isDev && autoUpdater) {
+        setTimeout(() => {
+          autoUpdater.checkForUpdates();
+        }, 3000);
+      }
+
+      app.on('activate', function () {
+        // On macOS it's common to re-create a window in the app when the
+        // dock icon is clicked and there are no other windows open.
+        if (BrowserWindow.getAllWindows().length === 0) createWindow();
+      });
+    });
+
+    // Quit when all windows are closed, except on macOS
+    app.on('window-all-closed', function () {
+      if (process.platform !== 'darwin') app.quit();
+    });
+
+    // Check for updates every hour - only in production
+    if (!isDev && autoUpdater) {
+      setInterval(() => {
+        autoUpdater.checkForUpdates();
+      }, 60 * 60 * 1000);
+    }
   }
 }

@@ -33,7 +33,11 @@
             "!**/*.md",
             "!.git",
             "!dist",
-            "!node_modules"
+            "!node_modules/**/*",
+            "node_modules/electron-updater/**/*"
+        ],
+        "asarUnpack": [
+            "node_modules/electron-updater/**/*"
         ],
         "win": {
             "target": [

@@ -14,8 +14,8 @@ function createWindow() {
     mainWindow = new BrowserWindow({
         width: 1400,
         height: 900,
-        minWidth: 800,
-        minHeight: 600,
+        minWidth: 1400,
+        minHeight: 900,
         icon: path.join(__dirname, 'PlanShake512x512.png'),
         webPreferences: {
             nodeIntegration: true,
