@@ -1,5 +1,10 @@
 const { app, BrowserWindow, ipcMain, Menu, shell, dialog } = require('electron');
 const path = require('path');
+const log = require('electron-log');
+
+// Configure logging
+log.transports.file.level = 'info';
+log.info('App starting...');
 
 // Import auto-updater only in production
 let autoUpdater;
@@ -10,11 +15,13 @@ if (!isDev) {
   try {
     autoUpdater = require('electron-updater').autoUpdater;
     // Configure auto-updater
+    autoUpdater.logger = log;
+    autoUpdater.logger.transports.file.level = 'info';
     autoUpdater.autoDownload = false;
     autoUpdater.autoInstallOnAppQuit = true;
-    console.log('Auto-updater loaded successfully');
+    log.info('Auto-updater loaded successfully');
   } catch (error) {
-    console.error('Failed to load electron-updater:', error.message);
+    log.error('Failed to load electron-updater:', error.message);
     console.log('Auto-update functionality will be disabled');
     autoUpdater = null;
   }
@@ -22,133 +29,27 @@ if (!isDev) {
   console.log('Running in development mode - auto-updater disabled');
 }
 
-// Keep a global reference of the window object
+// Keep global references of the window objects
 let mainWindow;
+let splashWindow;
 
-// Create native application menu - DISABLED per user request
-/*
-function createMenu() {
-  const template = [
-    {
-      label: 'File',
-      submenu: [
-        {
-          label: 'New Project',
-          accelerator: 'CmdOrCtrl+N',
-          click: () => {
-            mainWindow.webContents.send('menu-new-project');
-          }
-        },
-        { type: 'separator' },
-        {
-          label: 'Export',
-          accelerator: 'CmdOrCtrl+E',
-          click: () => {
-            mainWindow.webContents.send('menu-export');
-          }
-        },
-        {
-          label: 'Import',
-          accelerator: 'CmdOrCtrl+I',
-          click: () => {
-            mainWindow.webContents.send('menu-import');
-          }
-        },
-        { type: 'separator' },
-        {
-          label: 'Exit',
-          accelerator: 'Alt+F4',
-          click: () => {
-            app.quit();
-          }
-        }
-      ]
-    },
-    {
-      label: 'Edit',
-      submenu: [
-        { role: 'undo' },
-        { role: 'redo' },
-        { type: 'separator' },
-        { role: 'cut' },
-        { role: 'copy' },
-        { role: 'paste' },
-        { role: 'delete' },
-        { type: 'separator' },
-        { role: 'selectAll' }
-      ]
-    },
-    {
-      label: 'View',
-      submenu: [
-        { role: 'reload' },
-        { role: 'forceReload' },
-        { type: 'separator' },
-        { role: 'resetZoom' },
-        { role: 'zoomIn' },
-        { role: 'zoomOut' },
-        { type: 'separator' },
-        { role: 'togglefullscreen' }
-      ]
-    },
-    {
-      label: 'Help',
-      submenu: [
-        {
-          label: 'Check for Updates',
-          click: () => {
-            if (!isDev && autoUpdater) {
-              autoUpdater.checkForUpdates();
-            } else {
-              dialog.showMessageBox(mainWindow, {
-                type: 'info',
-                title: 'Updates',
-                message: 'You are running the latest version.',
-                buttons: ['OK']
-              });
-            }
-          }
-        },
-        { type: 'separator' },
-        {
-          label: 'About PlanShake',
-          click: () => {
-            dialog.showMessageBox(mainWindow, {
-              type: 'info',
-              title: 'About PlanShake',
-              message: 'PlanShake',
-              detail: `Version: ${app.getVersion()}\nA beautiful project management application.`,
-              buttons: ['OK']
-            });
-          }
-        }
-      ]
+function createSplashWindow() {
+  splashWindow = new BrowserWindow({
+    width: 500,
+    height: 300,
+    transparent: true,
+    frame: false,
+    alwaysOnTop: true,
+    icon: path.join(__dirname, 'PlanShake512x512.png'),
+    webPreferences: {
+      nodeIntegration: false,
+      contextIsolation: true
     }
-  ];
+  });
 
-  // Add Developer menu in development mode
-  if (isDev) {
-    template.push({
-      label: 'Developer',
-      submenu: [
-        { role: 'toggleDevTools' },
-        { type: 'separator' },
-        {
-          label: 'Reload',
-          accelerator: 'F5',
-          click: () => {
-            mainWindow.reload();
-          }
-        }
-      ]
-    });
-  }
-
-  const menu = Menu.buildFromTemplate(template);
-  Menu.setApplicationMenu(menu);
+  splashWindow.loadFile('splash.html');
+  splashWindow.center();
 }
-*/
-
 
 function createWindow() {
   // Create the browser window
@@ -170,12 +71,13 @@ function createWindow() {
       backgroundThrottling: false
     },
     backgroundColor: '#1a1a2e',
-    show: false,
+    show: false, // Keep hidden until ready
     // Native window features
-    frame: true,
-    titleBarStyle: 'default',
+    frame: false, // Frameless window for custom title bar
+    titleBarStyle: 'hidden', // Hide default title bar
+    titleBarOverlay: false, // We are building our own
     // Windows-specific
-    autoHideMenuBar: true, // Hide menu bar (user doesn't want it)
+    autoHideMenuBar: true,
     // Better window behavior
     center: true,
     resizable: true,
@@ -189,8 +91,15 @@ function createWindow() {
 
   // Show window when ready to prevent visual flash
   mainWindow.once('ready-to-show', () => {
-    mainWindow.show();
-    mainWindow.focus();
+    // Wait a small moment to ensure splash screen is seen (optional, but nice)
+    setTimeout(() => {
+      if (splashWindow) {
+        splashWindow.close();
+        splashWindow = null;
+      }
+      mainWindow.show();
+      mainWindow.focus();
+    }, 1500); // 1.5 seconds splash screen
   });
 
   // Open external links in default browser (not in app)
@@ -211,17 +120,12 @@ function createWindow() {
   // Handle window close
   mainWindow.on('close', (event) => {
     // You can add confirmation dialog here if needed
-    // event.preventDefault();
-    // dialog.showMessageBox(...)
   });
 
   // Emitted when the window is closed
   mainWindow.on('closed', function () {
     mainWindow = null;
   });
-
-  // Create native menu - DISABLED per user request
-  // createMenu();
 
   // Remove default menu on right-click (optional - makes it feel less like browser)
   mainWindow.webContents.on('context-menu', (event, params) => {
@@ -234,17 +138,25 @@ function createWindow() {
       event.preventDefault();
     }
   });
+
+  // Register global shortcut for DevTools
+  const { globalShortcut } = require('electron');
+  globalShortcut.register('CommandOrControl+Shift+I', () => {
+    if (mainWindow) {
+      mainWindow.webContents.toggleDevTools();
+    }
+  });
 }
 
 // Auto-updater event handlers (only in production)
 if (!isDev && autoUpdater) {
   autoUpdater.on('checking-for-update', () => {
-    console.log('Checking for updates...');
+    log.info('Checking for updates...');
     sendStatusToWindow('Checking for updates...');
   });
 
   autoUpdater.on('update-available', (info) => {
-    console.log('Update available:', info);
+    log.info('Update available:', info);
     sendStatusToWindow('Update available!');
 
     // Show dialog to user
@@ -254,12 +166,12 @@ if (!isDev && autoUpdater) {
   });
 
   autoUpdater.on('update-not-available', (info) => {
-    console.log('Update not available:', info);
+    log.info('Update not available:', info);
     sendStatusToWindow('You are running the latest version.');
   });
 
   autoUpdater.on('error', (err) => {
-    console.error('Error in auto-updater:', err);
+    log.error('Error in auto-updater:', err);
     sendStatusToWindow('Error checking for updates: ' + err);
   });
 
@@ -267,7 +179,7 @@ if (!isDev && autoUpdater) {
     let log_message = "Download speed: " + progressObj.bytesPerSecond;
     log_message = log_message + ' - Downloaded ' + progressObj.percent + '%';
     log_message = log_message + ' (' + progressObj.transferred + "/" + progressObj.total + ')';
-    console.log(log_message);
+    log.info(log_message);
 
     if (mainWindow) {
       mainWindow.webContents.send('download-progress', progressObj);
@@ -275,7 +187,7 @@ if (!isDev && autoUpdater) {
   });
 
   autoUpdater.on('update-downloaded', (info) => {
-    console.log('Update downloaded:', info);
+    log.info('Update downloaded:', info);
     sendStatusToWindow('Update downloaded. Will install on quit.');
 
     if (mainWindow) {
@@ -285,7 +197,7 @@ if (!isDev && autoUpdater) {
 }
 
 function sendStatusToWindow(text) {
-  console.log(text);
+  log.info(text);
   if (mainWindow) {
     mainWindow.webContents.send('update-status', text);
   }
@@ -294,6 +206,7 @@ function sendStatusToWindow(text) {
 // IPC handlers for update actions
 if (ipcMain) {
   ipcMain.on('download-update', () => {
+    log.info('User requested download update');
     if (!isDev && autoUpdater) {
       autoUpdater.downloadUpdate();
     }
@@ -305,11 +218,18 @@ if (ipcMain) {
     }
   });
 
-  ipcMain.on('check-for-updates', () => {
+  ipcMain.handle('check-for-updates', async () => {
     if (!isDev && autoUpdater) {
-      autoUpdater.checkForUpdates();
+      try {
+        const result = await autoUpdater.checkForUpdates();
+        return result;
+      } catch (error) {
+        log.error('Error checking for updates:', error);
+        return { error: error.message };
+      }
     } else {
-      console.log('Auto-updater not available in development mode');
+      log.info('Auto-updater not available in development mode');
+      return { error: 'Auto-updater disabled in dev mode' };
     }
   });
 
@@ -325,6 +245,30 @@ if (ipcMain) {
 
   ipcMain.handle('show-save-dialog', async (event, options) => {
     return dialog.showSaveDialog(mainWindow, options);
+  });
+
+  // Get App Version
+  ipcMain.handle('get-app-version', () => {
+    return app.getVersion();
+  });
+
+  // Custom Window Controls
+  ipcMain.on('window-minimize', () => {
+    if (mainWindow) mainWindow.minimize();
+  });
+
+  ipcMain.on('window-maximize', () => {
+    if (mainWindow) {
+      if (mainWindow.isMaximized()) {
+        mainWindow.unmaximize();
+      } else {
+        mainWindow.maximize();
+      }
+    }
+  });
+
+  ipcMain.on('window-close', () => {
+    if (mainWindow) mainWindow.close();
   });
 }
 
@@ -345,6 +289,7 @@ if (app) {
     });
 
     app.whenReady().then(() => {
+      createSplashWindow();
       createWindow();
 
       // Check for updates after app is ready (wait 3 seconds) - only in production
@@ -364,6 +309,12 @@ if (app) {
     // Quit when all windows are closed, except on macOS
     app.on('window-all-closed', function () {
       if (process.platform !== 'darwin') app.quit();
+    });
+
+    app.on('will-quit', () => {
+      // Unregister all shortcuts
+      const { globalShortcut } = require('electron');
+      globalShortcut.unregisterAll();
     });
 
     // Check for updates every hour - only in production

@@ -20,11 +20,13 @@
         "electron-builder": "^24.9.1"
     },
     "dependencies": {
+        "electron-log": "^5.4.3",
         "electron-updater": "^6.1.7"
     },
     "build": {
         "appId": "com.amrindie.planshake",
         "productName": "PlanShake",
+        "artifactName": "${productName}-Setup-${version}.${ext}",
         "directories": {
             "output": "dist"
         },
@@ -32,9 +34,7 @@
             "**/*",
             "!**/*.md",
             "!.git",
-            "!dist",
-            "!node_modules/**/*",
-            "node_modules/electron-updater/**/*"
+            "!dist"
         ],
         "asarUnpack": [
             "node_modules/electron-updater/**/*"
@@ -79,11 +79,13 @@
                 }
             ]
         },
-        "publish": {
-            "provider": "github",
-            "owner": "AMRindie",
-            "repo": "PlanShakeElectron",
-            "releaseType": "release"
-        }
+        "publish": [
+            {
+                "provider": "github",
+                "owner": "AMRindie",
+                "repo": "PlanShakeElectron",
+                "releaseType": "release"
+            }
+        ]
     }
 }

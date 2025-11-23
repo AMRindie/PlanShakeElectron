@@ -2,19 +2,27 @@
 // Add this to your existing app initialization
 
 (function initAutoUpdater() {
-    // Check if running in Electron
-    if (!window.electronAPI) {
-        console.log('Not running in Electron - auto-update disabled');
-        return;
-    }
+  // Check if running in Electron
+  if (!window.electronAPI) {
+    console.log('Not running in Electron - auto-update disabled');
+    return;
+  }
 
-    console.log('Auto-updater initialized');
+  console.log('Auto-updater initialized');
 
-    // Create update notification UI
-    function createUpdateNotification() {
-        const notification = document.createElement('div');
-        notification.id = 'update-notification';
-        notification.style.cssText = `
+  // Check and log the real version
+  window.electronAPI.getVersion().then(version => {
+    console.log('Current App Version:', version);
+    // Update the version display in the splash screen or UI if needed
+    const versionEl = document.querySelector('.version');
+    if (versionEl) versionEl.textContent = `v${version}`;
+  });
+
+  // Create update notification UI
+  function createUpdateNotification() {
+    const notification = document.createElement('div');
+    notification.id = 'update-notification';
+    notification.style.cssText = `
       position: fixed;
       top: 20px;
       right: 20px;
@@ -30,13 +38,13 @@
       display: none;
       animation: slideIn 0.3s ease-out;
     `;
-        document.body.appendChild(notification);
-        return notification;
-    }
+    document.body.appendChild(notification);
+    return notification;
+  }
 
-    // Add animation styles
-    const style = document.createElement('style');
-    style.textContent = `
+  // Add animation styles
+  const style = document.createElement('style');
+  style.textContent = `
     @keyframes slideIn {
       from {
         transform: translateX(400px);
@@ -111,13 +119,13 @@
       width: 0%;
     }
   `;
-    document.head.appendChild(style);
+  document.head.appendChild(style);
 
-    const notification = createUpdateNotification();
+  const notification = createUpdateNotification();
 
-    // Update available
-    window.electronAPI.onUpdateAvailable((info) => {
-        notification.innerHTML = `
+  // Update available
+  window.electronAPI.onUpdateAvailable((info) => {
+    notification.innerHTML = `
       <div class="update-title">🎉 Update Available!</div>
       <div class="update-message">Version ${info.version} is ready to download.</div>
       <div class="update-buttons">
@@ -125,25 +133,25 @@
         <button class="btn-secondary" onclick="document.getElementById('update-notification').style.display='none'">Later</button>
       </div>
     `;
-        notification.style.display = 'block';
-    });
+    notification.style.display = 'block';
+  });
 
-    // Download progress
-    window.electronAPI.onDownloadProgress((progress) => {
-        const percent = Math.round(progress.percent);
-        notification.innerHTML = `
+  // Download progress
+  window.electronAPI.onDownloadProgress((progress) => {
+    const percent = Math.round(progress.percent);
+    notification.innerHTML = `
       <div class="update-title">⬇️ Downloading Update...</div>
       <div class="update-message">${percent}% complete</div>
       <div class="progress-bar">
         <div class="progress-fill" style="width: ${percent}%"></div>
       </div>
     `;
-        notification.style.display = 'block';
-    });
+    notification.style.display = 'block';
+  });
 
-    // Update downloaded
-    window.electronAPI.onUpdateDownloaded((info) => {
-        notification.innerHTML = `
+  // Update downloaded
+  window.electronAPI.onUpdateDownloaded((info) => {
+    notification.innerHTML = `
       <div class="update-title">✅ Update Ready!</div>
       <div class="update-message">Version ${info.version} has been downloaded. Restart to install.</div>
       <div class="update-buttons">
@@ -151,28 +159,28 @@
         <button class="btn-secondary" onclick="document.getElementById('update-notification').style.display='none'">Later</button>
       </div>
     `;
-        notification.style.display = 'block';
-    });
+    notification.style.display = 'block';
+  });
 
-    // Status messages (optional - for debugging)
-    window.electronAPI.onUpdateStatus((text) => {
-        console.log('Update status:', text);
-    });
+  // Status messages (optional - for debugging)
+  window.electronAPI.onUpdateStatus((text) => {
+    console.log('Update status:', text);
+  });
 
-    // Add manual check button (optional)
-    window.checkForUpdates = () => {
-        window.electronAPI.checkForUpdates();
-        notification.innerHTML = `
+  // Add manual check button (optional)
+  window.checkForUpdates = () => {
+    window.electronAPI.checkForUpdates();
+    notification.innerHTML = `
       <div class="update-title">🔍 Checking for Updates...</div>
       <div class="update-message">Please wait...</div>
     `;
-        notification.style.display = 'block';
+    notification.style.display = 'block';
 
-        // Hide after 3 seconds if no update found
-        setTimeout(() => {
-            if (notification.querySelector('.update-title').textContent.includes('Checking')) {
-                notification.style.display = 'none';
-            }
-        }, 3000);
-    };
+    // Hide after 3 seconds if no update found
+    setTimeout(() => {
+      if (notification.querySelector('.update-title').textContent.includes('Checking')) {
+        notification.style.display = 'none';
+      }
+    }, 3000);
+  };
 })();

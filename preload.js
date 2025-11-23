@@ -4,7 +4,7 @@ const { contextBridge, ipcRenderer } = require('electron');
 // the ipcRenderer without exposing the entire object
 contextBridge.exposeInMainWorld('electronAPI', {
     // Auto-updater methods
-    checkForUpdates: () => ipcRenderer.send('check-for-updates'),
+    checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),
     downloadUpdate: () => ipcRenderer.send('download-update'),
     installUpdate: () => ipcRenderer.send('install-update'),
 
@@ -28,7 +28,15 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
     // Platform info
     platform: process.platform,
-    version: process.env.npm_package_version || '0.1.0',
+    version: '0.0.0', // Placeholder, use getVersion() for real version
+
+    // Async version check (most reliable)
+    getVersion: () => ipcRenderer.invoke('get-app-version'),
+
+    // Window Controls (for custom title bar)
+    minimize: () => ipcRenderer.send('window-minimize'),
+    maximize: () => ipcRenderer.send('window-maximize'),
+    close: () => ipcRenderer.send('window-close'),
 
     // Check if running in Electron (useful for conditional features)
     isElectron: true

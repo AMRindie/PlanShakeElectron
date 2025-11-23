@@ -1,5 +1,5 @@
 // Native app integration
-// This script adds native app behaviors and integrates with Electron menus
+// This script adds native app behaviors, custom title bar, and integrates with Electron
 
 (function initNativeIntegration() {
   // Check if running in Electron
@@ -10,34 +10,16 @@
 
   console.log('Native app integration initialized');
 
-  // Integrate with native menu - DISABLED (user doesn't want native menu)
-  /*
-  window.electronAPI.onMenuNewProject(() => {
-      console.log('Menu: New Project clicked');
-      const addBtn = document.getElementById('addProjectBtn');
-      if (addBtn) {
-          addBtn.click();
-      }
-  });
+  // --- Custom Title Bar Logic ---
+  const minBtn = document.getElementById('min-btn');
+  const maxBtn = document.getElementById('max-btn');
+  const closeBtn = document.getElementById('close-btn');
 
-  window.electronAPI.onMenuExport(() => {
-      console.log('Menu: Export clicked');
-      const exportBtn = document.getElementById('exportBtn');
-      if (exportBtn) {
-          exportBtn.click();
-      }
-  });
+  if (minBtn) minBtn.addEventListener('click', () => window.electronAPI.minimize());
+  if (maxBtn) maxBtn.addEventListener('click', () => window.electronAPI.maximize());
+  if (closeBtn) closeBtn.addEventListener('click', () => window.electronAPI.close());
 
-  window.electronAPI.onMenuImport(() => {
-      console.log('Menu: Import clicked');
-      const importBtn = document.getElementById('importAllBtn');
-      if (importBtn) {
-          importBtn.click();
-      }
-  });
-  */
-
-  // Add keyboard shortcuts info (standard shortcuts still work)
+  // --- Keyboard Shortcuts ---
   const shortcuts = {
     'Ctrl+Z': 'Undo',
     'Ctrl+Y': 'Redo',
@@ -51,7 +33,7 @@
   // Make shortcuts available globally
   window.appShortcuts = shortcuts;
 
-  // Add native-like selection behavior
+  // --- Native Selection Behavior ---
   document.addEventListener('selectstart', (e) => {
     // Allow text selection in inputs and textareas
     if (e.target.tagName === 'INPUT' ||
@@ -61,14 +43,92 @@
     }
     // Prevent selection on UI elements (more native feel)
     if (e.target.classList.contains('no-select') ||
-      e.target.closest('.no-select')) {
+      e.target.closest('.no-select') ||
+      e.target.closest('.titlebar')) { // Also prevent selection on titlebar
       e.preventDefault();
     }
   });
 
-  // Add CSS class for non-selectable UI elements
+  // --- CSS Injection for Native Look & Title Bar ---
   const style = document.createElement('style');
   style.textContent = `
+    /* Title Bar Styling */
+    .titlebar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: 32px;
+      background: #1a1a2e; /* Match app background */
+      color: #fff;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 9999;
+      user-select: none;
+      -webkit-user-select: none;
+      box-shadow: 0 1px 0 rgba(255, 255, 255, 0.05);
+    }
+
+    .titlebar-drag-region {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      -webkit-app-region: drag;
+      z-index: -1;
+    }
+
+    .titlebar-title {
+      padding-left: 12px;
+      font-size: 12px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      opacity: 0.8;
+      pointer-events: none;
+    }
+
+    .titlebar-controls {
+      display: flex;
+      height: 100%;
+      -webkit-app-region: no-drag;
+    }
+
+    .titlebar-button {
+      width: 46px;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: default;
+      transition: background 0.1s;
+      color: #ccc;
+    }
+
+    .titlebar-button:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
+
+    .titlebar-button.close-btn:hover {
+      background: #e81123;
+      color: #fff;
+    }
+    
+    /* Adjust app header to sit below titlebar */
+    .app-header {
+      margin-top: 32px;
+    }
+    
+    /* Adjust modal backdrop to cover everything */
+    .modal-backdrop {
+      z-index: 9998;
+    }
+    
+    .modal {
+      z-index: 10000; /* Above titlebar if needed, or adjust titlebar z-index */
+    }
+
     /* Native app styling */
     .no-select {
       -webkit-user-select: none;
@@ -128,15 +188,6 @@
     a:hover {
       text-decoration: underline;
     }
-
-    /* Native window drag region (if you want custom titlebar later) */
-    .titlebar {
-      -webkit-app-region: drag;
-    }
-
-    .titlebar button {
-      -webkit-app-region: no-drag;
-    }
   `;
   document.head.appendChild(style);
 
@@ -166,6 +217,24 @@
     }
   }, { passive: false });
 
+  // Block browser keyboard shortcuts
+  document.addEventListener('keydown', (e) => {
+    // Zoom: Ctrl + / Ctrl - / Ctrl 0
+    if (e.ctrlKey && (e.key === '+' || e.key === '-' || e.key === '0' || e.key === '=')) {
+      e.preventDefault();
+    }
+
+    // Reload: Ctrl + R / F5
+    if ((e.ctrlKey && e.key === 'r') || e.key === 'F5') {
+      e.preventDefault();
+    }
+
+    // History Navigation: Alt + Left / Alt + Right
+    if (e.altKey && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
+      e.preventDefault();
+    }
+  });
+
   // Prevent default drag behavior on images
   document.addEventListener('dragstart', (e) => {
     if (e.target.tagName === 'IMG') {
@@ -176,6 +245,8 @@
   // Add native-like window title updates
   function updateWindowTitle(title) {
     document.title = title || 'PlanShake';
+    const titleEl = document.querySelector('.titlebar-title');
+    if (titleEl) titleEl.textContent = title || 'PlanShake';
   }
 
   // Export for use in other scripts

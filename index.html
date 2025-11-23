@@ -19,6 +19,29 @@
 </head>
 
 <body>
+  <!-- Custom Title Bar -->
+  <div id="custom-titlebar" class="titlebar">
+    <div class="titlebar-drag-region"></div>
+    <div class="titlebar-title">PlanShake</div>
+    <div class="titlebar-controls">
+      <div class="titlebar-button" id="min-btn" title="Minimize">
+        <svg width="11" height="1" viewBox="0 0 11 1">
+          <path d="M0 0h11v1H0z" fill="currentColor" />
+        </svg>
+      </div>
+      <div class="titlebar-button" id="max-btn" title="Maximize">
+        <svg width="10" height="10" viewBox="0 0 10 10">
+          <path d="M0 0v10h10V0H0zm1 1h8v8H1V1z" fill="currentColor" />
+        </svg>
+      </div>
+      <div class="titlebar-button close-btn" id="close-btn" title="Close">
+        <svg width="10" height="10" viewBox="0 0 10 10">
+          <path d="M0 0l5 5 5-5v1L5 6 0 1V0zm0 10l5-5 5 5v-1L5 4 0 9v1z" fill="currentColor" />
+          <path d="M0 0l10 10m0-10L0 10" stroke="currentColor" stroke-width="1.5" />
+        </svg>
+      </div>
+    </div>
+  </div>
   <header class="app-header">
     <div class="logo">
       <span class="logo-icon">✨</span> Project Hub
