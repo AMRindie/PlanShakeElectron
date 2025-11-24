@@ -3975,3 +3975,344 @@ ul.wb-checklist li.checked {
 .wb-container[data-cursor="none"] {
   cursor: none;
 }
+
+/* ===========================
+   Whiteboard Context Menus
+   =========================== */
+
+.wb-context-menu {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  padding: 8px;
+  border-radius: 12px;
+  box-shadow:
+    0 4px 20px rgba(0, 0, 0, 0.15),
+    0 0 0 1px rgba(255, 255, 255, 0.5);
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  z-index: 1000;
+  transform: translate(-50%, -100%);
+  margin-top: -12px;
+  pointer-events: auto;
+  animation: menuPop 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes menuPop {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -90%) scale(0.9);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(-50%, -100%) scale(1);
+  }
+}
+
+.wb-menu-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.wb-menu-btn:hover,
+.wb-menu-btn.active {
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--text-primary);
+}
+
+.wb-menu-divider {
+  width: 1px;
+  height: 20px;
+  background: rgba(0, 0, 0, 0.1);
+  margin: 0 4px;
+}
+
+.wb-menu-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.wb-color-picker {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  padding: 0;
+  overflow: hidden;
+  cursor: pointer;
+  position: relative;
+}
+
+.wb-color-picker input {
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.wb-range-input {
+  width: 60px;
+}
+
+/* Sticky Note Content Editable */
+.wb-note-content {
+  width: 100%;
+  height: 100%;
+  padding: 12px;
+  outline: none;
+  overflow: hidden;
+  font-family: 'Inter', sans-serif;
+  line-height: 1.4;
+  cursor: text;
+
+  .board {
+    padding: 0 16px 100px 16px;
+    scroll-snap-type: x mandatory;
+  }
+
+  .list {
+    min-width: 85vw;
+    /* List is full width */
+    width: 85vw;
+    scroll-snap-align: center;
+  }
+
+  /* --- Modals (Bottom Sheet) --- */
+  .modal {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .modal-content {
+    width: 100%;
+    border-radius: 24px 24px 0 0;
+    /* Rounded top only */
+    max-height: 85vh;
+    animation: slideUp 0.3s ease;
+  }
+
+  @keyframes slideUp {
+    from {
+      transform: translateY(100%)
+    }
+
+    to {
+      transform: translateY(0)
+    }
+  }
+
+  /* --- Whiteboard --- */
+  .wb-toolbar {
+    bottom: 80px;
+    top: auto;
+    width: 92%;
+    overflow-x: auto;
+    justify-content: flex-start;
+  }
+}
+
+/* ===========================
+   TOUCH FIXES
+   =========================== */
+
+/* Prevent scrolling while drawing on whiteboard */
+.wb-container,
+#wbDrawingCanvas,
+#wbObjectLayer {
+  touch-action: none;
+  /* Disables browser zooming/panning gestures */
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Ensure touch targets are interactive */
+.wb-item,
+.wb-resize-handle {
+  touch-action: none;
+}
+
+/* Whiteboard Custom Cursor */
+.wb-cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  border: 1px solid rgba(0, 0, 0, 0.5);
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  z-index: 9999;
+  display: none;
+  /* Hidden by default */
+  box-shadow: 0 0 2px rgba(255, 255, 255, 0.8);
+}
+
+.wb-cursor.active {
+  display: block;
+}
+
+/* Hide default cursor when custom one is active */
+.wb-container[data-cursor="none"] {
+  cursor: none;
+}
+
+/* ===========================
+   Whiteboard Context Menus
+   =========================== */
+
+.wb-context-menu {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  padding: 8px;
+  border-radius: 12px;
+  box-shadow:
+    0 4px 20px rgba(0, 0, 0, 0.15),
+    0 0 0 1px rgba(255, 255, 255, 0.5);
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  z-index: 1000;
+  transform: translate(-50%, -100%);
+  margin-top: -12px;
+  pointer-events: auto;
+  animation: menuPop 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes menuPop {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -90%) scale(0.9);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(-50%, -100%) scale(1);
+  }
+}
+
+.wb-menu-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.wb-menu-btn:hover,
+.wb-menu-btn.active {
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--text-primary);
+}
+
+.wb-menu-divider {
+  width: 1px;
+  height: 20px;
+  background: rgba(0, 0, 0, 0.1);
+  margin: 0 4px;
+}
+
+.wb-menu-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.wb-color-picker {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  padding: 0;
+  overflow: hidden;
+  cursor: pointer;
+  position: relative;
+}
+
+.wb-color-picker input {
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.wb-range-input {
+  width: 60px;
+}
+
+/* Sticky Note Content Editable */
+.wb-note-content {
+  width: 100%;
+  height: 100%;
+  padding: 12px;
+  outline: none;
+  overflow: hidden;
+  font-family: 'Inter', sans-serif;
+  line-height: 1.4;
+  cursor: text;
+  user-select: text;
+  -webkit-user-select: text;
+  white-space: pre-wrap;
+}
+
+.wb-note-content[contenteditable="true"] {
+  cursor: text;
+  pointer-events: auto !important;
+}
+
+/* Checklist in Sticky Notes */
+.wb-note-content ul.wb-checklist {
+  list-style: none;
+  padding-left: 0;
+}
+
+.wb-note-content ul.wb-checklist li {
+  position: relative;
+  padding-left: 30px;
+  margin-bottom: 8px;
+  cursor: pointer;
+}
+
+.wb-note-content ul.wb-checklist li::before {
+  content: '☐';
+  position: absolute;
+  left: 0;
+  font-size: 18px;
+  color: var(--text-secondary);
+  user-select: none;
+}
+
+.wb-note-content ul.wb-checklist li.checked::before {
+  content: '☑';
+  color: var(--accent-green);
+}
+
+.wb-note-content ul.wb-checklist li.checked {
+  text-decoration: line-through;
+  opacity: 0.6;
+}

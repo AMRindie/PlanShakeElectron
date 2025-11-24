@@ -253,6 +253,19 @@ async function loadData() {
             }
         }
 
+        // 3. Validate data structure - ensure it has projects array
+        if (data && !Array.isArray(data.projects)) {
+            console.warn("Data structure invalid - fixing...", data);
+            // If data looks like a single project, wrap it
+            if (data.id && data.lists) {
+                data = { projects: [data] };
+                await idb.put(DB_KEY, data); // Save corrected structure
+            } else {
+                // Corrupted data, start fresh
+                data = { projects: [] };
+            }
+        }
+
         return data || { projects: [] };
     } catch (err) {
         console.error("IDB Load Error", err);
@@ -507,6 +520,14 @@ async function initHomePage() {
 
     function renderProjectsByStatus() {
         projectsContainer.innerHTML = "";
+
+        // Defensive check - ensure data exists
+        if (!data || !data.projects) {
+            console.error("Data not loaded properly:", data);
+            projectsContainer.innerHTML = '<div style="padding: 40px; text-align: center;"><h3>Error loading data</h3><p>Please refresh the page or check browser console for errors.</p></div>';
+            return;
+        }
+
         const columns = [{ key: "active", title: "Active" }, { key: "todo", title: "To Do" }, { key: "finished", title: "Finished" }];
 
         columns.forEach(col => {
