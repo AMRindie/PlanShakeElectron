@@ -661,10 +661,15 @@
         if (!els.wbLayerList) return;
         const wb = window.currentProject.whiteboard;
         els.wbLayerList.innerHTML = "";
-        [...wb.layers].reverse().forEach(l => {
+        [...wb.layers].reverse().forEach((l, reversedIdx) => {
+            // Calculate actual index in the layers array
+            const actualIndex = wb.layers.length - 1 - reversedIdx;
+
             const div = document.createElement("div");
             div.className = `layer-item ${l.id === state.activeLayerId ? 'active' : ''}`;
             div.onclick = () => { state.activeLayerId = l.id; renderLayersUI(); };
+
+            // Visibility toggle button
             const vis = document.createElement("button");
             vis.className = "icon-btn small";
             vis.textContent = l.visible ? "👁️" : "○";
@@ -677,7 +682,81 @@
                 });
                 renderLayersUI(); save();
             };
-            div.append(vis, document.createTextNode(l.name));
+
+            // Layer name text
+            const nameSpan = document.createTextNode(l.name);
+
+            // Button container for layer actions
+            const btnContainer = document.createElement("div");
+            btnContainer.style.cssText = "display: flex; gap: 4px; margin-left: auto;";
+
+            // Move Up button (only if not at top)
+            if (actualIndex < wb.layers.length - 1) {
+                const moveUpBtn = document.createElement("button");
+                moveUpBtn.className = "icon-btn small";
+                moveUpBtn.textContent = "▲";
+                moveUpBtn.title = "Move Layer Up";
+                moveUpBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    // Swap with layer above
+                    [wb.layers[actualIndex], wb.layers[actualIndex + 1]] = [wb.layers[actualIndex + 1], wb.layers[actualIndex]];
+                    renderLayersUI();
+                    redraw();
+                    renderDOM();
+                    save();
+                };
+                btnContainer.appendChild(moveUpBtn);
+            }
+
+            // Move Down button (only if not at bottom)
+            if (actualIndex > 0) {
+                const moveDownBtn = document.createElement("button");
+                moveDownBtn.className = "icon-btn small";
+                moveDownBtn.textContent = "▼";
+                moveDownBtn.title = "Move Layer Down";
+                moveDownBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    // Swap with layer below
+                    [wb.layers[actualIndex], wb.layers[actualIndex - 1]] = [wb.layers[actualIndex - 1], wb.layers[actualIndex]];
+                    renderLayersUI();
+                    redraw();
+                    renderDOM();
+                    save();
+                };
+                btnContainer.appendChild(moveDownBtn);
+            }
+
+            // Delete button (only if more than one layer)
+            if (wb.layers.length > 1) {
+                const deleteBtn = document.createElement("button");
+                deleteBtn.className = "icon-btn small";
+                deleteBtn.textContent = "🗑️";
+                deleteBtn.title = "Delete Layer";
+                deleteBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    if (confirm(`Delete layer "${l.name}"?\n\nAll items and strokes on this layer will be permanently removed.`)) {
+                        // Remove all items and strokes from this layer
+                        wb.items = wb.items.filter(i => i.layerId !== l.id);
+                        wb.strokes = wb.strokes.filter(s => s.layerId !== l.id);
+
+                        // Remove the layer
+                        wb.layers.splice(actualIndex, 1);
+
+                        // If we deleted the active layer, switch to first layer
+                        if (state.activeLayerId === l.id) {
+                            state.activeLayerId = wb.layers[0].id;
+                        }
+
+                        renderLayersUI();
+                        redraw();
+                        renderDOM();
+                        save();
+                    }
+                };
+                btnContainer.appendChild(deleteBtn);
+            }
+
+            div.append(vis, nameSpan, btnContainer);
             els.wbLayerList.appendChild(div);
         });
     }

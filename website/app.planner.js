@@ -165,6 +165,18 @@ function editMilestone(index) {
     const entry = window.currentProject.planner.entries[index];
     if (!entry) return;
 
+    // Ensure the milestone modal exists (in case we haven't visited Timeline yet)
+    if (window.initMilestoneModal && !document.getElementById("milestoneEditModal")) {
+        window.initMilestoneModal();
+    }
+
+    // If we have the calendar's editMilestone function, use it (opens the modal)
+    if (window.editMilestoneModal) {
+        window.editMilestoneModal(index);
+        return;
+    }
+
+    // Fallback: use the form-based editing (old behavior)
     const form = document.getElementById("plannerEntryForm");
     const titleInput = document.getElementById("plannerEntryTitle");
     const notesInput = document.getElementById("plannerEntryNotes");

@@ -140,7 +140,7 @@ let lastSavedEventHandler = null;
         const distance = Math.sqrt(dx * dx + dy * dy);
 
         // Determine threshold based on input type
-        const threshold = isStylus(touch) ? 3 : 10; // 3px for stylus, 10px for finger
+        const threshold = isStylus(touch) ? 3 : 5; // 3px for stylus, 5px for finger (improved responsiveness)
 
         // Only initiate drag if moved > threshold
         if (!dragInitiated && distance > threshold) {
@@ -166,10 +166,12 @@ let lastSavedEventHandler = null;
             touchGhost = touchDragSrc.cloneNode(true);
             touchGhost.style.position = "fixed";
             touchGhost.style.width = touchDragSrc.offsetWidth + "px";
-            touchGhost.style.opacity = "0.8";
+            touchGhost.style.opacity = "0.9";
             touchGhost.style.pointerEvents = "none";
             touchGhost.style.zIndex = "9999";
-            touchGhost.style.transform = "rotate(3deg)";
+            touchGhost.style.transform = "rotate(3deg) scale(1.05)";
+            touchGhost.style.boxShadow = "0 8px 24px rgba(0,0,0,0.15)";
+            touchGhost.style.transition = "transform 0.1s ease-out";
             document.body.appendChild(touchGhost);
             touchDragSrc.style.opacity = "0.5"; // Dim original
         }
@@ -1415,7 +1417,6 @@ async function initProjectPage() {
         const labelNameInput = document.getElementById("cardLabelsInput");
         const addLabelBtn = document.getElementById("addLabelBtn");
         const labelListContainer = document.getElementById("labelListContainer");
-        const deleteCardBtn = document.getElementById("deleteCardBtn");
 
         // Ensure card structure is robust
         if (!card.labels) card.labels = [];
@@ -1680,8 +1681,12 @@ async function initProjectPage() {
         };
         document.getElementById("closeModalBtn").onclick = () => modal.classList.add("hidden");
 
-        if (deleteCardBtn) {
-            deleteCardBtn.onclick = () => {
+        const archiveCardBtn = document.getElementById("archiveCardBtn");
+        const permanentDeleteCardBtn = document.getElementById("permanentDeleteCardBtn");
+
+        // Archive button handler
+        if (archiveCardBtn) {
+            archiveCardBtn.onclick = () => {
                 if (!window.currentProject.archive) window.currentProject.archive = { cards: [], lists: [] };
                 if (confirm("Archive this card?")) {
                     // Remove from its list
@@ -1691,6 +1696,19 @@ async function initProjectPage() {
                         ...card,
                         listId: list.id
                     });
+                    saveData(window.currentData);
+                    modal.classList.add("hidden");
+                    renderBoard();
+                }
+            };
+        }
+
+        // Permanent Delete button handler
+        if (permanentDeleteCardBtn) {
+            permanentDeleteCardBtn.onclick = () => {
+                if (confirm("Permanently delete this card?\n\nThis action cannot be undone.")) {
+                    // Remove from its list
+                    list.cards = list.cards.filter(c => c.id !== card.id);
                     saveData(window.currentData);
                     modal.classList.add("hidden");
                     renderBoard();
