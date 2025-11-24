@@ -1,0 +1,91 @@
+{
+    "name": "planshake",
+    "version": "0.1.3",
+    "description": "PlanShake - Project Management Application",
+    "main": "main.js",
+    "scripts": {
+        "start": "electron .",
+        "pack": "electron-builder --dir",
+        "dist": "electron-builder",
+        "publish": "electron-builder --publish always"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/AMRindie/PlanShakeElectron.git"
+    },
+    "author": "AMRindie",
+    "license": "MIT",
+    "devDependencies": {
+        "electron": "^39.2.3",
+        "electron-builder": "^24.9.1"
+    },
+    "dependencies": {
+        "electron-log": "^5.4.3",
+        "electron-updater": "^6.1.7"
+    },
+    "build": {
+        "appId": "com.amrindie.planshake",
+        "productName": "PlanShake",
+        "artifactName": "${productName}-Setup-${version}.${ext}",
+        "directories": {
+            "output": "dist"
+        },
+        "files": [
+            "**/*",
+            "!**/*.md",
+            "!.git",
+            "!dist"
+        ],
+        "asarUnpack": [
+            "node_modules/electron-updater/**/*"
+        ],
+        "win": {
+            "target": [
+                {
+                    "target": "nsis",
+                    "arch": [
+                        "x64"
+                    ]
+                }
+            ],
+            "icon": "website/PlanShake512x512.png",
+            "publish": [
+                {
+                    "provider": "github",
+                    "owner": "AMRindie",
+                    "repo": "PlanShakeElectron"
+                }
+            ]
+        },
+        "mac": {
+            "target": "dmg",
+            "icon": "website/PlanShake512x512.png",
+            "publish": [
+                {
+                    "provider": "github",
+                    "owner": "AMRindie",
+                    "repo": "PlanShakeElectron"
+                }
+            ]
+        },
+        "linux": {
+            "target": "AppImage",
+            "icon": "website/PlanShake512x512.png",
+            "publish": [
+                {
+                    "provider": "github",
+                    "owner": "AMRindie",
+                    "repo": "PlanShakeElectron"
+                }
+            ]
+        },
+        "publish": [
+            {
+                "provider": "github",
+                "owner": "AMRindie",
+                "repo": "PlanShakeElectron",
+                "releaseType": "release"
+            }
+        ]
+    }
+}

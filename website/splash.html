@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PlanShake</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- VisionOS Variables from style.css --- */
+        :root {
+            --mat-glass-base: rgba(255, 255, 255, 1);
+            /* High blur + Saturation for the "Liquid" feel */
+            --glass-blur: blur(40px) saturate(180%);
+            --glass-border: 1px solid rgba(255, 255, 255, 0.45);
+            --text-primary: #1D1D1F;
+            --text-secondary: #6e6e73;
+            --accent-blue: #007AFF;
+            --spring-smooth: cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            
+            /* --- FULLY TRANSPARENT BACKGROUND --- */
+            background: transparent; 
+            
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            user-select: none;
+            
+            /* Allow dragging the window by clicking empty space (common in Electron) */
+            -webkit-app-region: drag; 
+        }
+
+        /* --- Glassmorphism Splash Card --- */
+        .splash-card {
+            -webkit-app-region: drag;
+            position: relative;
+            width: 300px;
+            padding: 40px 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            
+            /* The Glass Effect */
+            background-color: var(--mat-glass-base);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur); /* Safari/Webkit support */
+            
+            border: var(--glass-border);
+            border-radius: 32px;
+            
+            /* Deep shadow to separate glass from desktop/background */
+            box-shadow: 
+                0 25px 50px -12px rgba(0, 0, 0, 0.25),
+                0 0 0 1px rgba(255, 255, 255, 0.5),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8);
+                
+            /* Ensure text inside is not draggable so you can select if needed, 
+               but usually splash text shouldn't be selectable. 
+               Setting no-drag allows clicks to pass through to buttons if you add them. */
+            -webkit-app-region: no-drag; 
+        }
+
+        /* Optional: Add a subtle sheen animation */
+        .splash-card::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: 32px;
+            background: radial-gradient(circle at 50% -20%, 
+                rgba(255, 255, 255, 0.8), 
+                transparent 70%);
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
+        .logo-container {
+            margin-bottom: 24px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .logo {
+            width: 88px;
+            height: 88px;
+            border-radius: 20px;
+            object-fit: contain;
+            /* Soft shadow for the logo itself */
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+        }
+
+        h1 {
+            font-size: 26px;
+            font-weight: 700;
+            margin: 0 0 6px 0;
+            letter-spacing: -0.01em;
+            color: var(--text-primary);
+            z-index: 2;
+        }
+
+        .version {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+            z-index: 2;
+        }
+
+        /* --- Liquid Loader --- */
+        .loader-track {
+            width: 100%;
+            height: 5px;
+            background: rgba(0, 0, 0, 0.06);
+            border-radius: 99px;
+            overflow: hidden;
+            position: relative;
+            z-index: 2;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .loader-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 40%;
+            background: var(--accent-blue);
+            border-radius: 99px;
+            animation: liquidLoad 1.8s var(--spring-smooth) infinite;
+            box-shadow: 0 0 8px rgba(0, 122, 255, 0.4);
+        }
+
+        @keyframes liquidLoad {
+            0% { left: -40%; width: 30%; }
+            50% { width: 70%; }
+            100% { left: 100%; width: 30%; }
+        }
+
+        .status-text {
+            margin-top: 16px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            opacity: 0.8;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            z-index: 2;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="splash-card">
+        <div class="logo-container">
+            <img src="PlanShake512x512.png" alt="PlanShake Logo" class="logo">
+        </div>
+        
+        <h1>PlanShake</h1>
+        <div class="version">v 1.0.0</div>
+
+        <div class="loader-track">
+            <div class="loader-bar"></div>
+        </div>
+        
+        <div class="status-text">Loading Workspace...</div>
+    </div>
+</body>
+
+</html>
