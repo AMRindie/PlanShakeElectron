@@ -1,7 +1,7 @@
 # PlanShake
 
 <p align="center">
-  <img src="website/PlanShake512x512.png" alt="PlanShake Logo" width="128" height="128">
+  <img src="PlanShake512x512.png" alt="PlanShake Logo" width="128" height="128">
 </p>
 
 <p align="center">
