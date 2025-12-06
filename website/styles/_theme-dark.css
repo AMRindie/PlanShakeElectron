@@ -1,0 +1,1107 @@
+/* ============================================
+   DARK THEME OVERRIDES
+   ============================================
+   Dedicated dark mode styling for the entire app.
+   Imported LAST to override all other styles.
+   ============================================ */
+
+[data-theme="dark"] {
+    /* --- Base Variables Redefinition --- */
+    --bg-body: #0d0d1a;
+    --mat-glass-base: rgba(30, 30, 50, 0.85);
+    /* Slightly more opaque for readability */
+    --mat-glass-heavy: rgba(40, 40, 65, 0.9);
+    --mat-glass-recessed: rgba(0, 0, 0, 0.25);
+
+    /* Colors */
+    --text-primary: #f0f0f5;
+    --text-secondary: #a0a0b0;
+    --text-tertiary: #6e6e80;
+
+    /* Surfaces */
+    --bg-surface: rgba(30, 30, 50, 0.7);
+    --bg-surface-hover: rgba(45, 45, 70, 0.85);
+    --bg-inset: rgba(20, 20, 35, 0.6);
+
+    /* Borders */
+    --border: rgba(100, 100, 140, 0.3);
+    --border-hover: rgba(130, 130, 170, 0.5);
+
+    /* Glass Effects */
+    --glass-border: 1px solid rgba(255, 255, 255, 0.1);
+    --glass-shadow:
+        0 4px 30px rgba(0, 0, 0, 0.4),
+        inset 0 0 20px rgba(80, 80, 120, 0.1);
+
+    --glass-blur: blur(40px) saturate(140%);
+    /* Less saturation in dark mode */
+}
+
+/* --- Global Body Background --- */
+[data-theme="dark"] body {
+    background-color: #0d0d1a;
+    background-image:
+        radial-gradient(at 10% 10%, rgba(60, 40, 100, 0.25) 0px, transparent 50%),
+        radial-gradient(at 90% 90%, rgba(30, 60, 100, 0.25) 0px, transparent 50%),
+        radial-gradient(at 50% 50%, rgba(20, 20, 40, 0.95) 0px, transparent 100%);
+    color: var(--text-primary);
+}
+
+/* ===========================
+   COMPONENT OVERRIDES
+   =========================== */
+
+/* Buttons */
+[data-theme="dark"] .secondary-btn,
+[data-theme="dark"] .icon-btn,
+[data-theme="dark"] .wb-btn,
+[data-theme="dark"] .circle-btn,
+[data-theme="dark"] .cal-control-btn {
+    background: rgba(255, 255, 255, 0.08);
+    /* White tint instead of dark for contrast */
+    color: var(--text-primary);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .secondary-btn:hover,
+[data-theme="dark"] .icon-btn:hover,
+[data-theme="dark"] .wb-btn:hover,
+[data-theme="dark"] .circle-btn:hover,
+[data-theme="dark"] .cal-control-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+}
+
+/* Inputs */
+[data-theme="dark"] input[type="text"],
+[data-theme="dark"] input[type="date"],
+[data-theme="dark"] input[type="number"],
+[data-theme="dark"] textarea,
+[data-theme="dark"] select,
+[data-theme="dark"] .project-title-input {
+    background: rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+[data-theme="dark"] input::placeholder,
+[data-theme="dark"] textarea::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+}
+
+[data-theme="dark"] .project-title-input {
+    color: white;
+}
+
+/* Modals */
+[data-theme="dark"] .modal-backdrop {
+    background: rgba(0, 0, 10, 0.7);
+}
+
+[data-theme="dark"] .modal-content {
+    background: rgba(30, 32, 40, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+}
+
+/* Primary Button */
+[data-theme="dark"] .primary-btn {
+    background: #6b6bff;
+    box-shadow: 0 4px 12px rgba(107, 107, 255, 0.3);
+}
+
+[data-theme="dark"] .primary-btn:hover {
+    background: #5858e6;
+}
+
+/* Cover Picker & Swatches */
+[data-theme="dark"] .cover-picker {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .cover-swatch.selected {
+    border-color: white;
+}
+
+/* Segmented Controls (Cover Mode Row) */
+[data-theme="dark"] .card-cover-mode-row {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .card-cover-mode-row button {
+    color: var(--text-secondary);
+}
+
+[data-theme="dark"] .card-cover-mode-row button:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .card-cover-mode-row button.active {
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* Color Swatches */
+[data-theme="dark"] .label-color,
+[data-theme="dark"] .card-cover-color {
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+[data-theme="dark"] .label-color.selected::after,
+[data-theme="dark"] .card-cover-color.selected::after {
+    border-color: white;
+}
+
+[data-theme="dark"] .modal-header {
+    background: rgba(45, 45, 55, 0.8);
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .modal-header h3 {
+    color: #e0e0e0;
+}
+
+[data-theme="dark"] .modal-footer {
+    border-top-color: rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.2);
+}
+
+/* Toggle Switch */
+[data-theme="dark"] .toggle-slider {
+    background-color: #333;
+}
+
+[data-theme="dark"] .toggle-slider:before {
+    background-color: #bbb;
+}
+
+[data-theme="dark"] input:checked+.toggle-slider {
+    background-color: var(--accent-blue);
+}
+
+[data-theme="dark"] input:checked+.toggle-slider:before {
+    background-color: white;
+}
+
+/* ===========================
+   LAYOUT OVERRIDES
+   =========================== */
+
+/* Header */
+[data-theme="dark"] .app-header {
+    background: rgba(20, 22, 30, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow:
+        0 10px 40px -10px rgba(0, 0, 0, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .app-header::after {
+    opacity: 0.2;
+}
+
+/* Header Color Tinting - Dark Mode */
+[data-theme="dark"] .app-header.cover-blue {
+    background: rgba(0, 50, 100, 0.6);
+    border-color: rgba(0, 122, 255, 0.3);
+    box-shadow:
+        0 10px 40px -10px rgba(0, 122, 255, 0.3),
+        inset 0 0 30px rgba(0, 122, 255, 0.1);
+}
+
+[data-theme="dark"] .app-header.cover-purple {
+    background: rgba(60, 30, 80, 0.6);
+    border-color: rgba(175, 82, 222, 0.3);
+    box-shadow:
+        0 10px 40px -10px rgba(175, 82, 222, 0.3),
+        inset 0 0 30px rgba(175, 82, 222, 0.1);
+}
+
+[data-theme="dark"] .app-header.cover-green {
+    background: rgba(20, 60, 30, 0.6);
+    border-color: rgba(52, 199, 89, 0.3);
+    box-shadow:
+        0 10px 40px -10px rgba(52, 199, 89, 0.3),
+        inset 0 0 30px rgba(52, 199, 89, 0.1);
+}
+
+[data-theme="dark"] .app-header.cover-orange {
+    background: rgba(80, 40, 10, 0.6);
+    border-color: rgba(255, 149, 0, 0.3);
+    box-shadow:
+        0 10px 40px -10px rgba(255, 149, 0, 0.3),
+        inset 0 0 30px rgba(255, 149, 0, 0.1);
+}
+
+[data-theme="dark"] .app-header.cover-dark {
+    background: rgba(83, 83, 87, 0.8);
+    border-color: rgba(100, 100, 120, 0.2);
+    box-shadow:
+        0 10px 40px -10px rgba(209, 206, 206, 0.5),
+        inset 0 0 30px rgba(0, 0, 0, 0.2);
+}
+
+/* Bottom Nav */
+[data-theme="dark"] .bottom-nav {
+    background: rgba(25, 27, 35, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow:
+        0 20px 50px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .bottom-nav__link {
+    color: var(--text-secondary);
+}
+
+[data-theme="dark"] .bottom-nav__link:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .bottom-nav__link--active {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Sidebar / Menu */
+[data-theme="dark"] .board-menu {
+    background: rgba(25, 25, 35, 0.95);
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .menu-header {
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .menu-section {
+    border-bottom-color: rgba(255, 255, 255, 0.05);
+}
+
+/* ===========================
+   PAGE SPECIFIC OVERRIDES
+   =========================== */
+
+/* --- Home --- */
+[data-theme="dark"] .home-intro h1 {
+    color: var(--text-primary);
+    background: none;
+    -webkit-text-fill-color: var(--text-primary);
+}
+
+[data-theme="dark"] .home-intro p {
+    color: var(--text-secondary);
+}
+
+[data-theme="dark"] .project-section {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+[data-theme="dark"] .project-card {
+    background: rgba(40, 40, 55, 0.6);
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="dark"] .project-card:hover {
+    background: rgba(50, 50, 70, 0.8);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+[data-theme="dark"] .project-card-icon {
+    background: rgba(255, 255, 255, 0.1);
+    box-shadow: none;
+}
+
+[data-theme="dark"] .project-placeholder {
+    background: rgba(255, 255, 255, 0.02);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* --- Board --- */
+[data-theme="dark"] .list {
+    background: rgba(30, 30, 40, 0.6);
+    border-color: rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .list.drag-over {
+    background: rgba(40, 40, 55, 0.8);
+}
+
+[data-theme="dark"] .card {
+    background: rgba(60, 60, 75, 0.7);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .card:hover {
+    background: rgba(70, 70, 90, 0.9);
+}
+
+[data-theme="dark"] .card-title {
+    color: white;
+}
+
+[data-theme="dark"] .new-card-input {
+    background: rgba(0, 0, 0, 0.3);
+}
+
+/* --- Planner --- */
+[data-theme="dark"] .planner-panel,
+[data-theme="dark"] .notes-panel {
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .planner-entry {
+    background: rgba(40, 40, 55, 0.6);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .planner-entry:hover {
+    background: rgba(50, 50, 70, 0.8);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+[data-theme="dark"] .planner-form {
+    background: rgba(30, 30, 45, 0.6);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* --- Whiteboard --- */
+[data-theme="dark"] .whiteboard-panel {
+    background-color: #121218;
+    /* Darker canvas */
+    /* Optional: Dot grid pattern can be inverted here if implemented */
+}
+
+/* Whiteboard Toolbar */
+[data-theme="dark"] .wb-toolbar {
+    background: rgba(40, 40, 50, 0.8);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+[data-theme="dark"] .wb-btn.active {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+[data-theme="dark"] .wb-toolbar .divider-vertical {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* Layer Panel */
+[data-theme="dark"] .wb-layer-panel {
+    background: rgba(30, 30, 40, 0.9);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .layer-header {
+    background: rgba(255, 255, 255, 0.05);
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .layer-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .layer-item.active {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Context Menu */
+[data-theme="dark"] .wb-context-menu {
+    background: rgba(35, 35, 45, 0.95);
+    box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.08),
+        0 4px 16px -2px rgba(0, 0, 0, 0.4),
+        0 12px 40px -8px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="dark"] .wb-menu-row {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+[data-theme="dark"] .wb-menu-btn {
+    color: #aaa;
+}
+
+[data-theme="dark"] .wb-menu-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+[data-theme="dark"] .wb-menu-btn.active {
+    background: var(--accent-blue);
+    color: white;
+}
+
+[data-theme="dark"] .wb-menu-btn.delete-btn:hover {
+    background: rgba(220, 38, 38, 0.2);
+    color: #f87171;
+}
+
+[data-theme="dark"] .wb-menu-divider {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .wb-select {
+    background-color: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #e0e0e0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23aaa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+}
+
+[data-theme="dark"] .wb-select:hover {
+    background-color: rgba(255, 255, 255, 0.12);
+}
+
+[data-theme="dark"] .wb-color-wrapper {
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+[data-theme="dark"] .wb-color-label {
+    text-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Sticky Notes */
+/* Keep sticky notes bright for contrast, or mute them slightly? 
+   Let's keep them classic yellow unless requested otherwise, 
+   but ensure text is dark on them. */
+[data-theme="dark"] .wb-note {
+    /* No change needed, yellow background needs dark text */
+    color: #854D0E;
+}
+
+/* --- Notes Editor --- */
+[data-theme="dark"] .notes-toolbar-fixed {
+    background: rgba(40, 40, 50, 0.9);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+[data-theme="dark"] .nt-select-pill,
+[data-theme="dark"] .nt-align-trigger,
+[data-theme="dark"] .nt-icon-select-wrapper,
+[data-theme="dark"] .color-picker-wrapper:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .nt-select-pill:hover,
+[data-theme="dark"] .nt-align-trigger:hover,
+[data-theme="dark"] .nt-icon-select-wrapper:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+[data-theme="dark"] .nt-align-menu {
+    background: #2a2a35;
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* The Paper */
+[data-theme="dark"] .notes-editor-content {
+    background-color: #1e1e24;
+    /* Dark lined paper effect */
+    background-image: repeating-linear-gradient(to bottom, transparent 0px, transparent 1122px, #333 1122px, #333 1123px);
+    color: #e0e0e0;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="dark"] .notes-editor-content h1,
+[data-theme="dark"] .notes-editor-content h2,
+[data-theme="dark"] .notes-editor-content h3 {
+    color: white;
+    border-bottom-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Checklists in notes (dark mode fixes) */
+[data-theme="dark"] ul.wb-checklist li::before {
+    background: rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+[data-theme="dark"] ul.wb-checklist li:hover::before {
+    border-color: white;
+}
+
+/* --- Calendar / Timeline --- */
+[data-theme="dark"] .timeline-header {
+    background: rgba(30, 30, 40, 0.8);
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .header-month-row {
+    border-bottom-color: rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .timeline-bg-cell {
+    border-right-color: rgba(255, 255, 255, 0.03);
+}
+
+[data-theme="dark"] .timeline-bg-cell.weekend {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .milestones-track {
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .calendar-controls {
+    background: rgba(40, 40, 50, 0.8);
+    border-color: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+/* Timeline Bars - Dark Mode variants */
+[data-theme="dark"] .timeline-bar {
+    background: rgba(50, 50, 70, 0.8);
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .bar-title {
+    color: white;
+}
+
+[data-theme="dark"] .bar-dates {
+    color: var(--text-tertiary);
+}
+
+[data-theme="dark"] .milestone-bar.bar-high {
+    background: linear-gradient(135deg, rgba(127, 29, 29, 0.4), rgba(69, 10, 10, 0.6));
+    border-left-color: #ef4444;
+}
+
+[data-theme="dark"] .milestone-bar.bar-medium {
+    background: linear-gradient(135deg, rgba(124, 45, 18, 0.4), rgba(67, 20, 7, 0.6));
+    border-left-color: #f97316;
+}
+
+[data-theme="dark"] .milestone-bar.bar-low {
+    background: linear-gradient(135deg, rgba(30, 58, 138, 0.4), rgba(23, 37, 84, 0.6));
+    border-left-color: #3b82f6;
+}
+
+/* Scrollbars */
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+/* View Switcher - Dark Mode */
+[data-theme="dark"] .timeline-view-switcher {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .view-switch-btn {
+    color: var(--text-secondary);
+}
+
+[data-theme="dark"] .view-switch-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .view-switch-btn.active {
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+}
+
+/* Apple Calendar - Dark Mode */
+[data-theme="dark"] .month-calendar-wrapper {
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .month-calendar-day {
+    background: rgba(40, 40, 55, 0.6);
+    border-color: rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .month-calendar-day:hover {
+    background: rgba(50, 50, 70, 0.8);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .month-calendar-day.other-month {
+    opacity: 0.3;
+}
+
+[data-theme="dark"] .month-calendar-day.today {
+    background: var(--accent-blue);
+}
+
+[data-theme="dark"] .day-number {
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .month-nav-btn {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: var(--text-secondary);
+}
+
+[data-theme="dark"] .month-nav-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+}
+
+[data-theme="dark"] .event-dot.more {
+    background: rgba(255, 255, 255, 0.15);
+    color: var(--text-secondary);
+}
+
+/* Day Popover - Dark Mode */
+[data-theme="dark"] .day-popover {
+    background: rgba(30, 32, 40, 0.95);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4),
+        0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .popover-header {
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .popover-date {
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .popover-close {
+    color: var(--text-tertiary);
+}
+
+[data-theme="dark"] .popover-close:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+[data-theme="dark"] .popover-event:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .popover-event-title {
+    color: var(--text-primary);
+}
+
+/* Custom Dialog - Dark Mode */
+[data-theme="dark"] .custom-dialog {
+    background: rgba(35, 35, 45, 0.95);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .custom-dialog-header h3 {
+    color: #e0e0e0;
+}
+
+[data-theme="dark"] .custom-dialog-body p {
+    color: #a0a0a0;
+}
+
+[data-theme="dark"] .custom-dialog-footer {
+    background: rgba(0, 0, 0, 0.2);
+    border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .custom-dialog-btn.cancel-btn {
+    background: rgba(255, 255, 255, 0.1);
+    color: #a0a0a0;
+}
+
+[data-theme="dark"] .custom-dialog-btn.cancel-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: #e0e0e0;
+}
+
+/* Range Slider - Dark Mode */
+[data-theme="dark"] input[type="range"] {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] input[type="range"]::-moz-range-track {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Checkbox - Dark Mode */
+[data-theme="dark"] input[type="checkbox"] {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+[data-theme="dark"] input[type="checkbox"]:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Select - Dark Mode */
+[data-theme="dark"] select {
+    background-color: rgba(45, 45, 55, 0.8);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23aaa' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 12px 12px;
+}
+
+[data-theme="dark"] select:hover {
+    background-color: rgba(60, 60, 70, 0.9);
+}
+
+[data-theme="dark"] select option {
+    background: #2a2a35;
+    color: #e0e0e0;
+}
+
+/* File Input - Dark Mode */
+[data-theme="dark"] .file-input-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+[data-theme="dark"] .file-input-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.25);
+}
+
+/* Scrollbars - Dark Mode */
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+[data-theme="dark"] * {
+    scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+}
+
+/* Color Picker - Dark Mode */
+[data-theme="dark"] input[type="color"] {
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+[data-theme="dark"] input[type="color"]:hover {
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Color Picker Popup - Dark Mode */
+[data-theme="dark"] .color-picker-popup {
+    background: rgba(35, 35, 45, 0.95);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .color-picker-header {
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .color-picker-title {
+    color: #e0e0e0;
+}
+
+[data-theme="dark"] .color-picker-preview {
+    background: rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="dark"] .color-preview-box {
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+[data-theme="dark"] .color-hex-input {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.15);
+    color: #e0e0e0;
+}
+
+[data-theme="dark"] .color-tab {
+    background: rgba(255, 255, 255, 0.08);
+    color: #a0a0a0;
+}
+
+[data-theme="dark"] .color-tab:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+[data-theme="dark"] .color-picker-footer {
+    border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .color-picker-btn.cancel {
+    background: rgba(255, 255, 255, 0.1);
+    color: #a0a0a0;
+}
+
+[data-theme="dark"] .color-picker-btn.cancel:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+/* Date Picker - Dark Mode */
+[data-theme="dark"] .date-picker-popup {
+    background: rgba(35, 35, 45, 0.95);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .date-picker-header {
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .date-picker-title {
+    color: #e0e0e0;
+}
+
+[data-theme="dark"] .date-nav-btn {
+    color: #a0a0a0;
+}
+
+[data-theme="dark"] .date-nav-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #e0e0e0;
+}
+
+[data-theme="dark"] .date-weekday {
+    color: #707080;
+}
+
+[data-theme="dark"] .date-day {
+    color: #e0e0e0;
+}
+
+[data-theme="dark"] .date-day:hover {
+    background: rgba(0, 122, 255, 0.2);
+}
+
+[data-theme="dark"] .date-day.other-month {
+    color: #606070;
+}
+
+[data-theme="dark"] .date-day.today {
+    color: var(--accent-blue);
+    background: rgba(0, 122, 255, 0.15);
+}
+
+[data-theme="dark"] .date-picker-footer {
+    border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .date-picker-btn.clear,
+[data-theme="dark"] .date-picker-btn.cancel {
+    background: rgba(255, 255, 255, 0.1);
+    color: #a0a0a0;
+}
+
+[data-theme="dark"] .date-picker-btn.clear:hover,
+[data-theme="dark"] .date-picker-btn.cancel:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+/* Rich Text Editor - Dark Mode */
+[data-theme="dark"] .rich-text-toolbar {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .rt-btn {
+    color: #a0a0a0;
+}
+
+[data-theme="dark"] .rt-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #e0e0e0;
+}
+
+[data-theme="dark"] .rt-separator {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+[data-theme="dark"] .rich-text-editor {
+    background: rgba(45, 45, 55, 0.8);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #e0e0e0;
+}
+
+[data-theme="dark"] .rich-text-editor:focus {
+    background: rgba(50, 50, 60, 0.95);
+}
+
+[data-theme="dark"] .rt-checkbox {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* Modal Inputs - Dark Mode */
+[data-theme="dark"] .modal-content input[type="text"],
+[data-theme="dark"] .modal-content input[type="date"],
+[data-theme="dark"] .modal-content input[type="number"],
+[data-theme="dark"] .modal-content textarea,
+[data-theme="dark"] .modal-content select {
+    background: rgba(255, 255, 255, 0.08);
+    color: #e0e0e0;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="dark"] .modal-content input:focus,
+[data-theme="dark"] .modal-content textarea:focus,
+[data-theme="dark"] .modal-content select:focus {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+[data-theme="dark"] .modal-content input::placeholder,
+[data-theme="dark"] .modal-content textarea::placeholder {
+    color: #707080;
+}
+
+/* Modal Header & Labels - Dark Mode */
+[data-theme="dark"] .modal-header {
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .modal-header h3 {
+    color: #e0e0e0;
+}
+
+[data-theme="dark"] .modal-section label {
+    color: #a0a0a0;
+}
+
+[data-theme="dark"] .modal-footer {
+    border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Card Labels in modal - Dark Mode */
+[data-theme="dark"] .label-list {
+    background: transparent;
+}
+
+[data-theme="dark"] .label-list .label-row {
+    background: transparent;
+}
+
+/* Project Header Stats - Dark Mode */
+[data-theme="dark"] .project-header {
+    color: #e0e0e0;
+}
+
+[data-theme="dark"] .project-header .stat-value {
+    color: #e0e0e0;
+}
+
+[data-theme="dark"] .project-header .stat-label {
+    color: #a0a0a0;
+}
+
+[data-theme="dark"] .project-meta {
+    color: #a0a0a0;
+}
+
+/* Menu Project Header - Dark Mode */
+[data-theme="dark"] .menu-project-header {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .menu-project-name {
+    color: #e0e0e0;
+}
+
+/* wb-checklist in dark mode */
+[data-theme="dark"] .wb-checklist li::before {
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+[data-theme="dark"] .wb-checklist li.checked {
+    color: #707080;
+}
+
+/* Board Menu (Side Panel) - Dark Mode */
+[data-theme="dark"] .board-menu {
+    background: rgba(35, 35, 45, 0.95);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .menu-header {
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .menu-header h3 {
+    color: #e0e0e0;
+}
+
+[data-theme="dark"] .menu-section label {
+    color: #a0a0a0;
+}
+
+/* Stats - Dark Mode */
+[data-theme="dark"] .stat {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .stat:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+[data-theme="dark"] .stat strong {
+    color: #e0e0e0;
+}
+
+[data-theme="dark"] .stat span {
+    color: #a0a0a0;
+}
+
+/* Menu Project Header - Dark Mode */
+[data-theme="dark"] .menu-project-header {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .menu-project-icon {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .menu-project-info h2 {
+    color: #e0e0e0;
+}
+
+/* Archive Panel - Dark Mode */
+[data-theme="dark"] .archive-panel {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+[data-theme="dark"] .archived-card-row {
+    background: rgba(255, 255, 255, 0.08);
+    color: #e0e0e0;
+}
+
+[data-theme="dark"] .archived-card-title {
+    color: #e0e0e0;
+}
+
+/* Settings Modal - Dark Mode */
+[data-theme="dark"] .modal-content {
+    background: rgba(35, 35, 45, 0.98);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .modal-body {
+    color: #e0e0e0;
+}
+
+/* Secondary Button in Dark Mode */
+[data-theme="dark"] .secondary-btn {
+    background: rgba(255, 255, 255, 0.1);
+    color: #e0e0e0;
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+[data-theme="dark"] .secondary-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+}

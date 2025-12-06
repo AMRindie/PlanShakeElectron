@@ -38,6 +38,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
     maximize: () => ipcRenderer.send('window-maximize'),
     close: () => ipcRenderer.send('window-close'),
 
+    // Cache Management
+    getCacheSize: () => ipcRenderer.invoke('get-cache-size'),
+    clearCache: () => ipcRenderer.invoke('clear-cache'),
+    setCacheEnabled: (enabled) => ipcRenderer.invoke('set-cache-enabled', enabled),
+    onCachePreferenceChanged: (callback) => ipcRenderer.on('cache-preference-changed', (event, enabled) => callback(enabled)),
+
     // Check if running in Electron (useful for conditional features)
     isElectron: true
 });

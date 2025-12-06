@@ -9,7 +9,13 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css" />
+  <script>
+    (function () {
+      const savedTheme = localStorage.getItem('planshake_theme') || 'light';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+    })();
+  </script>
+  <link rel="stylesheet" href="styles/main.css" />
   <link rel="manifest" href="manifest.json">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -22,7 +28,7 @@
   <header class="app-header">
     <div class="header-left">
       <button class="back-btn" onclick="window.location.href='index.html'">
-        <span class="icon">←</span> All Projects
+        <span class="icon">←</span> <span data-i18n="allProjects">All Projects</span>
       </button>
       <div class="divider-vertical"></div>
       <div class="project-title-wrapper">
@@ -53,7 +59,7 @@
         </div>
       </div>
 
-      <button id="toggleMenuBtn" class="secondary-btn menu-toggle-btn" type="button">
+      <button id="toggleMenuBtn" class="secondary-btn menu-toggle-btn" type="button" data-i18n="menu">
         Menu
       </button>
     </div>
@@ -65,7 +71,7 @@
       <!-- Kanban Board Section -->
       <section id="board" class="board" data-project-view="board">
         <div class="list add-list">
-          <button id="addListBtn" class="primary-btn full-width">+ Add another list</button>
+          <button id="addListBtn" class="primary-btn full-width" data-i18n="addAnotherList">+ Add another list</button>
           <div class="add-list-input-wrapper hidden">
             <input type="text" id="newListTitle" placeholder="List title..." />
           </div>
@@ -76,33 +82,33 @@
       <section id="plannerView" class="planner-panel hidden" data-project-view="plannerView">
         <header class="panel-header">
           <div class="panel-title">
-            <h2>Project Milestones</h2>
-            <p>Define key phases and long-term goals.</p>
+            <h2 data-i18n="projectMilestones">Project Milestones</h2>
+            <p data-i18n="milestonesDesc">Define key phases and long-term goals.</p>
           </div>
         </header>
         <div class="planner-grid">
           <div class="planner-entry-list" id="plannerEntryList"></div>
           <form id="plannerEntryForm" class="planner-form">
-            <h3>New Milestone</h3>
+            <h3 data-i18n="newMilestone">New Milestone</h3>
             <input id="plannerEntryTitle" type="text" placeholder="Milestone Title (e.g. Phase 1)" required />
             <textarea id="plannerEntryNotes" rows="2" placeholder="Details (optional)"></textarea>
             <div class="planner-form__row">
               <div class="date-group">
-                <label>Start</label>
+                <label data-i18n="start">Start</label>
                 <input id="plannerEntryStart" type="date" />
               </div>
               <div class="date-group">
-                <label>End</label>
+                <label data-i18n="end">End</label>
                 <input id="plannerEntryDue" type="date" />
               </div>
               <select id="plannerEntryPriority">
-                <option value="Low">Low Priority</option>
-                <option value="Medium" selected>Medium Priority</option>
-                <option value="High">High Priority</option>
+                <option value="Low" data-i18n="lowPriority">Low Priority</option>
+                <option value="Medium" selected data-i18n="mediumPriority">Medium Priority</option>
+                <option value="High" data-i18n="highPriority">High Priority</option>
               </select>
             </div>
-            <button type="submit" class="primary-btn full-width">Add Milestone</button>
-            <button id="plannerClearLowBtn" type="button" class="text-btn full-width">
+            <button type="submit" class="primary-btn full-width" data-i18n="addMilestone">Add Milestone</button>
+            <button id="plannerClearLowBtn" type="button" class="text-btn full-width" data-i18n="clearLowPriority">
               Clear Low Priority
             </button>
           </form>
@@ -113,8 +119,8 @@
       <section id="calendarView" class="calendar-panel hidden" data-project-view="calendarView">
         <header class="panel-header">
           <div class="panel-title">
-            <h2>Timeline</h2>
-            <p>Project roadmap and deadlines.</p>
+            <h2 data-i18n="timeline">Timeline</h2>
+            <p data-i18n="timelineDesc">Project roadmap and deadlines.</p>
           </div>
         </header>
         <div id="calendarContainer" class="calendar-container"></div>
@@ -124,10 +130,10 @@
       <section id="notesView" class="notes-panel hidden" data-project-view="notesView">
         <header class="panel-header">
           <div class="panel-title">
-            <h2>Project Notes</h2>
-            <p>Rich text documentation and thoughts.</p>
+            <h2 data-i18n="projectNotes">Project Notes</h2>
+            <p data-i18n="notesDesc">Rich text documentation and thoughts.</p>
           </div>
-          <span class="status-badge">Autosaved</span>
+          <span class="status-badge" data-i18n="autosaved">Autosaved</span>
         </header>
         <div id="notesContainer" class="notes-container">
           <!-- Rich text editor will be injected here by app.notes.js -->
@@ -212,8 +218,8 @@
         <!-- Layer Panel (Floating) -->
         <div id="wbLayerPanel" class="wb-layer-panel hidden">
           <div class="layer-header">
-            <span>Layers</span>
-            <button id="wbAddLayerBtn" class="text-btn small">+ Add</button>
+            <span data-i18n="layers">Layers</span>
+            <button id="wbAddLayerBtn" class="text-btn small">+ <span data-i18n="add">Add</span></button>
           </div>
           <div id="wbLayerList" class="layer-list">
             <!-- Layers injected via JS -->
@@ -222,7 +228,7 @@
 
         <!-- View Controls -->
         <div class="wb-view-controls">
-          <button id="wbResetViewBtn" class="text-btn small">Reset View</button>
+          <button id="wbResetViewBtn" class="text-btn small" data-i18n="resetView">Reset View</button>
           <span id="wbZoomLevel">100%</span>
         </div>
 
@@ -247,7 +253,7 @@
     <!-- Side Menu (Existing) -->
     <aside id="boardMenu" class="board-menu">
       <div class="menu-header">
-        <h3>Details</h3>
+        <h3 data-i18n="details">Details</h3>
         <button id="closeMenuBtnMobile" class="icon-btn mobile-only">✕</button>
       </div>
 
@@ -264,63 +270,63 @@
           <div class="meta-stats">
             <div class="stat">
               <strong id="menuListCount">0</strong>
-              <span>Lists</span>
+              <span data-i18n="lists">Lists</span>
             </div>
             <div class="stat">
               <strong id="menuCardCount">0</strong>
-              <span>Cards</span>
+              <span data-i18n="cards">Cards</span>
             </div>
             <div class="stat">
               <strong id="menuStatus">Active</strong>
-              <span>Status</span>
+              <span data-i18n="status">Status</span>
             </div>
             <div class="stat">
               <strong id="menuCreated">Today</strong>
-              <span>Created</span>
+              <span data-i18n="created">Created</span>
             </div>
           </div>
         </div>
 
         <div class="menu-section">
-          <label>Description</label>
+          <label data-i18n="description">Description</label>
           <textarea id="projectDescriptionInput" rows="4" placeholder="Add project context..."></textarea>
         </div>
 
         <div class="menu-section">
-          <label>Quick Actions</label>
+          <label data-i18n="quickActions">Quick Actions</label>
           <div class="menu-btn-stack">
             <button id="archiveDoneCardsBtn" class="secondary-btn">
               <span class="btn-icon">📦</span>
-              Archive Completed Cards
+              <span data-i18n="archiveCompletedCards">Archive Completed Cards</span>
             </button>
             <button id="showArchiveBtn" class="secondary-btn">
               <span class="btn-icon">📂</span>
-              View Archive
+              <span data-i18n="viewArchive">View Archive</span>
             </button>
           </div>
         </div>
 
         <div id="archivePanel" class="archive-panel hidden">
-          <h4>Archive</h4>
+          <h4 data-i18n="archived">Archive</h4>
           <div id="archivedCardsContainer"></div>
           <!-- Close button removed, controlled by toggle -->
         </div>
 
         <div class="menu-section">
-          <label>Danger Zone</label>
+          <label data-i18n="dangerZone">Danger Zone</label>
           <div class="menu-btn-stack">
             <button id="deleteAllCardsBtn" class="secondary-btn danger-action">
               <span class="btn-icon">🗑️</span>
-              Delete All Cards
+              <span data-i18n="deleteAllCards">Delete All Cards</span>
             </button>
             <button id="deleteAllListsBtn" class="secondary-btn danger-action">
               <span class="btn-icon">🗑️</span>
-              Delete All Lists
+              <span data-i18n="deleteAllLists">Delete All Lists</span>
             </button>
           </div>
         </div>
 
-        <small class="last-saved" id="menuLastSaved">Syncing...</small>
+        <small class="last-saved" id="menuLastSaved" data-i18n="syncing">Syncing...</small>
       </div>
     </aside>
     <div id="boardMenuOverlay" class="board-menu-overlay hidden"></div>
@@ -328,29 +334,31 @@
 
   <div id="cardModal" class="modal hidden">
     <div class="modal-backdrop"></div>
-    <div class="modal-content" style="max-width: 640px;">
+    <div class="modal-content" style="max-width: 800px;">
 
       <div id="modalCoverBanner" class="modal-cover-banner hidden"></div>
 
       <div class="modal-header">
-        <h3>Edit Card</h3>
+        <h3 data-i18n="editCard">Edit Card</h3>
         <button id="closeModalBtn" class="icon-btn">✕</button>
       </div>
 
       <div class="modal-body">
         <div class="modal-section no-margin-bottom">
-          <label>Title</label>
+          <label data-i18n="title">Title</label>
           <input id="cardTitleInput" class="full-width" placeholder="Card title..." />
         </div>
 
         <div class="modal-section" style="margin-top: 20px;">
-          <label>Cover</label>
+          <label data-i18n="cover">Cover</label>
           <div class="card-cover-controls-compact">
             <div class="card-cover-mode-row">
-              <button type="button" id="cardCoverColorModeBtn" class="secondary-btn small">Color</button>
-              <button type="button" id="cardCoverImageModeBtn" class="secondary-btn small">Image</button>
-              <button type="button" id="cardCoverClearBtn" class="text-btn small" style="margin-left: auto;">Remove
-                Cover</button>
+              <button type="button" id="cardCoverColorModeBtn" class="secondary-btn small"
+                data-i18n="color">Color</button>
+              <button type="button" id="cardCoverImageModeBtn" class="secondary-btn small"
+                data-i18n="image">Image</button>
+              <button type="button" id="cardCoverClearBtn" class="text-btn small" style="margin-left: auto;"
+                data-i18n="removeCover">Remove Cover</button>
             </div>
 
             <div class="card-cover-color-row">
@@ -384,56 +392,104 @@
         </div>
 
         <div class="modal-section">
-          <label>Description</label>
-          <textarea id="cardDescriptionInput" rows="3" class="full-width"
-            placeholder="Add a more detailed description..."></textarea>
+          <label data-i18n="description">Description</label>
+          <div class="rich-text-toolbar">
+            <button type="button" class="rt-btn" data-cmd="bold" title="Bold"><b>B</b></button>
+            <button type="button" class="rt-btn" data-cmd="italic" title="Italic"><i>I</i></button>
+            <span class="rt-separator"></span>
+            <button type="button" class="rt-btn" data-cmd="justifyLeft" title="Align Left">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="17" y1="10" x2="3" y2="10" />
+                <line x1="21" y1="6" x2="3" y2="6" />
+                <line x1="21" y1="14" x2="3" y2="14" />
+                <line x1="17" y1="18" x2="3" y2="18" />
+              </svg>
+            </button>
+            <button type="button" class="rt-btn" data-cmd="justifyCenter" title="Align Center">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="21" y1="10" x2="3" y2="10" />
+                <line x1="21" y1="6" x2="3" y2="6" />
+                <line x1="21" y1="14" x2="3" y2="14" />
+                <line x1="21" y1="18" x2="3" y2="18" />
+              </svg>
+            </button>
+            <button type="button" class="rt-btn" data-cmd="justifyRight" title="Align Right">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="21" y1="10" x2="7" y2="10" />
+                <line x1="21" y1="6" x2="3" y2="6" />
+                <line x1="21" y1="14" x2="3" y2="14" />
+                <line x1="21" y1="18" x2="7" y2="18" />
+              </svg>
+            </button>
+            <span class="rt-separator"></span>
+            <button type="button" class="rt-btn" data-cmd="insertUnorderedList" title="Bullet List">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="8" y1="6" x2="21" y2="6" />
+                <line x1="8" y1="12" x2="21" y2="12" />
+                <line x1="8" y1="18" x2="21" y2="18" />
+                <line x1="3" y1="6" x2="3.01" y2="6" />
+                <line x1="3" y1="12" x2="3.01" y2="12" />
+                <line x1="3" y1="18" x2="3.01" y2="18" />
+              </svg>
+            </button>
+            <button type="button" class="rt-btn" data-cmd="insertOrderedList" title="Numbered List">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="10" y1="6" x2="21" y2="6" />
+                <line x1="10" y1="12" x2="21" y2="12" />
+                <line x1="10" y1="18" x2="21" y2="18" />
+                <path d="M4 6h1v4" />
+                <path d="M4 10h2" />
+                <path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1" />
+              </svg>
+            </button>
+            <span class="rt-separator"></span>
+            <button type="button" class="rt-btn" id="insertCheckboxBtn" title="Checklist">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="5" width="18" height="14" rx="2" />
+                <path d="m9 12 2 2 4-4" />
+              </svg>
+            </button>
+          </div>
+          <div id="cardDescriptionEditor" class="rich-text-editor" contenteditable="true"
+            placeholder="Add a more detailed description..."></div>
         </div>
 
         <div class="modal-grid" style="grid-template-columns: 1fr 1fr; gap: 20px;">
           <div>
             <div class="modal-section">
-              <label>Start Date</label>
-              <input id="cardDueDateInput" type="date" class="full-width" />
+              <label data-i18n="startDate">Start Date</label>
+              <input id="cardStartDateInput" type="date" class="full-width" />
             </div>
             <div class="modal-section">
-              <label>Duration (Days)</label>
-              <input id="cardDurationInput" type="number" min="1" value="1" class="full-width" />
+              <label data-i18n="endDate">End Date</label>
+              <input id="cardEndDateInput" type="date" class="full-width" />
             </div>
           </div>
 
           <div class="modal-section">
-            <label>Labels</label>
+            <label data-i18n="labels">Labels</label>
             <div class="label-picker-compact">
               <div class="label-input-row">
-                <input id="cardLabelsInput" type="text" class="full-width" placeholder="Search or create..." />
+                <input id="cardLabelsInput" type="text" class="full-width" placeholder="Add label..." />
                 <button id="addLabelBtn" class="secondary-btn small">+</button>
-              </div>
-              <div class="label-color-row">
-                <span class="label-color" data-color="#ef4444" style="background:#ef4444"></span>
-                <span class="label-color" data-color="#f97316" style="background:#f97316"></span>
-                <span class="label-color" data-color="#22c55e" style="background:#22c55e"></span>
-                <span class="label-color" data-color="#3b82f6" style="background:#3b82f6"></span>
               </div>
               <div id="labelListContainer" class="label-list"></div>
             </div>
           </div>
         </div>
-
-        <div class="modal-section">
-          <label>Checklist</label>
-          <div class="checklist-input-group">
-            <input type="text" id="newChecklistItemInput" class="full-width" placeholder="Add an item..." />
-            <button id="addChecklistItemBtn" class="secondary-btn">Add</button>
-          </div>
-          <ul id="checklistContainer" class="checklist"></ul>
-        </div>
       </div>
 
       <div class="modal-footer" style="justify-content: space-between;">
-        <button id="permanentDeleteCardBtn" class="danger-btn">Delete</button>
+        <button id="permanentDeleteCardBtn" class="danger-btn" data-i18n="delete">Delete</button>
         <div style="display: flex; gap: 8px;">
-          <button id="archiveCardBtn" class="secondary-btn">Archive</button>
-          <button id="saveCardBtn" class="primary-btn">Save Changes</button>
+          <button id="archiveCardBtn" class="secondary-btn" data-i18n="archive">Archive</button>
+          <button id="saveCardBtn" class="primary-btn" data-i18n="saveChanges">Save Changes</button>
         </div>
       </div>
     </div>
@@ -441,27 +497,32 @@
 
   <nav class="bottom-nav" aria-label="Project navigation">
     <div class="glass-noise">
-      <button type="button" class="bottom-nav__link bottom-nav__link--active" data-view-target="board">
+      <button type="button" class="bottom-nav__link bottom-nav__link--active" data-view-target="board"
+        data-i18n="board">
         Board
       </button>
-      <button type="button" class="bottom-nav__link" data-view-target="plannerView">
+      <button type="button" class="bottom-nav__link" data-view-target="plannerView" data-i18n="milestones">
         Milestones
       </button>
-      <button type="button" class="bottom-nav__link" data-view-target="calendarView">
+      <button type="button" class="bottom-nav__link" data-view-target="calendarView" data-i18n="timeline">
         Timeline
       </button>
-      <button type="button" class="bottom-nav__link" data-view-target="notesView">
+      <button type="button" class="bottom-nav__link" data-view-target="notesView" data-i18n="notes">
         Notes
       </button>
-      <button type="button" class="bottom-nav__link" data-view-target="whiteboardView">
+      <button type="button" class="bottom-nav__link" data-view-target="whiteboardView" data-i18n="whiteboard">
         Whiteboard
       </button>
     </div>
   </nav>
 
   <script src="app.data.js"></script>
+  <script src="app.i18n.js"></script>
+  <script src="app.native.js"></script>
   <script src="app.notes.js"></script>
   <script src="app.js"></script>
+  <script src="app.colorpicker.js"></script>
+  <script src="app.datepicker.js"></script>
   <script src="app.whiteboard.js" type="module"></script>
   <script src="app.planner.js"></script>
   <script src="app.calendar.js"></script>

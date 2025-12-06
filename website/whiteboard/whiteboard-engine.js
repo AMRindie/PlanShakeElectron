@@ -52,6 +52,21 @@ class WhiteboardEngine {
             }
         });
 
+        // Initialize Context Menu first so we can reference it
+        this.contextMenu = new ContextMenu(
+            this.elements.wbContextMenu,
+            this.stateManager,
+            {
+                onItemUpdate: (item) => {
+                    this.objectManager.updateItemTransform(null, item);
+                    this.stateManager.scheduleSave();
+                },
+                onItemDelete: (itemId) => {
+                    this.objectManager.deleteItem(itemId);
+                }
+            }
+        );
+
         // Initialize layer manager
         this.layerManager = new LayerManager(
             this.elements.wbLayerPanel,
@@ -80,27 +95,22 @@ class WhiteboardEngine {
             {
                 getActiveLayerId: () => this.layerManager.getActiveLayerId(),
                 onHideContextMenu: () => this.contextMenu.hide(),
+
+                // New callback when note editing starts to update menu
+                onNoteEditStart: (itemEl) => {
+                    const itemId = itemEl.dataset.id;
+                    const wb = this.stateManager.getWhiteboard();
+                    const item = wb.items.find(i => i.id === itemId);
+                    // Show menu again - it will detect edit mode and show formatting tools
+                    if (item) this.contextMenu.show(item, itemEl);
+                },
+
                 onResizeStart: (resizeInfo) => {
                     this.interactionHandler.startResize(resizeInfo);
                 }
             }
         );
         this.objectManager.renderAll();
-
-        // Initialize context menu
-        this.contextMenu = new ContextMenu(
-            this.elements.wbContextMenu,
-            this.stateManager,
-            {
-                onItemUpdate: (item) => {
-                    this.objectManager.updateItemTransform(null, item);
-                    this.stateManager.scheduleSave();
-                },
-                onItemDelete: (itemId) => {
-                    this.objectManager.deleteItem(itemId);
-                }
-            }
-        );
 
         // Initialize interaction handler
         this.interactionHandler = new InteractionHandler(
@@ -116,7 +126,7 @@ class WhiteboardEngine {
                     const layer = wb.layers.find(l => l.id === this.layerManager.getActiveLayerId());
 
                     if (!layer || !layer.visible) {
-                        alert('Active layer is hidden');
+                        customAlert('Active layer is hidden', { title: 'Cannot Draw' });
                         return;
                     }
 
@@ -146,24 +156,27 @@ class WhiteboardEngine {
                     const layer = wb.layers.find(l => l.id === item.layerId);
 
                     if (layer && layer.visible) {
-                        // Show context menu
                         this.contextMenu.show(item, itemEl);
-
-                        // Start drag
                         this.objectManager.selectItem(itemEl);
-                        this.stateManager.recordHistory();
                         this.interactionHandler.startItemDrag(itemId);
                     }
+                },
+                onItemDragStart: () => {
+                    this.stateManager.recordHistory();
+                },
+                onItemDrag: (itemId, dx, dy) => {
+                    this.objectManager.dragItem(itemId, dx, dy);
+                    // Update menu position while dragging
+                    this.contextMenu.updatePosition();
+                },
+                onItemResize: (resizeInfo, dx, dy) => {
+                    this.objectManager.performResize(resizeInfo, dx, dy);
+                    // Update menu position while resizing
+                    this.contextMenu.updatePosition();
                 },
                 onCanvasClick: () => {
                     this.objectManager.deselectAll();
                     this.contextMenu.hide();
-                },
-                onItemDrag: (itemId, dx, dy) => {
-                    this.objectManager.dragItem(itemId, dx, dy);
-                },
-                onItemResize: (resizeInfo, dx, dy) => {
-                    this.objectManager.performResize(resizeInfo, dx, dy);
                 },
                 onCursorMove: (x, y) => {
                     this.updateBrushCursor(x, y);

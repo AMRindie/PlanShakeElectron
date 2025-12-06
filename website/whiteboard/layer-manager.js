@@ -104,9 +104,9 @@ class LayerManager {
             deleteBtn.className = 'icon-btn small';
             deleteBtn.textContent = '🗑️';
             deleteBtn.title = 'Delete Layer';
-            deleteBtn.onclick = (e) => {
+            deleteBtn.onclick = async (e) => {
                 e.stopPropagation();
-                if (confirm(`Delete layer "${layer.name}"?\n\nAll items and strokes on this layer will be permanently removed.`)) {
+                if (await customConfirm(`Delete layer "${layer.name}"?\n\nAll items and strokes on this layer will be permanently removed.`, { title: "Delete Layer", confirmText: "Delete", danger: true })) {
                     this.stateManager.deleteLayer(layer.id);
 
                     // If we deleted the active layer, switch to first layer
@@ -163,8 +163,8 @@ class LayerManager {
     /**
      * Clear active layer
      */
-    clearActiveLayer() {
-        if (confirm('Clear active layer?')) {
+    async clearActiveLayer() {
+        if (await customConfirm('Clear active layer?', { title: "Clear Layer", confirmText: "Clear", danger: true })) {
             this.stateManager.recordHistory();
             this.stateManager.clearLayer(this.activeLayerId);
             this.callbacks.onLayerChange();

@@ -29,20 +29,21 @@ function setupPlannerPanel() {
         if (e.startDate && e.dueDate) {
             dateDisplay = `${e.startDate} ➝ ${e.dueDate}`;
         } else if (e.dueDate) {
-            dateDisplay = `Due: ${e.dueDate}`;
+            dateDisplay = `${t('due')}: ${e.dueDate}`;
         } else if (e.startDate) {
-            dateDisplay = `Starts: ${e.startDate}`;
+            dateDisplay = `${t('starts')}: ${e.startDate}`;
         }
 
         const priorityClass = `priority-${e.priority.toLowerCase()}`;
+        const priorityText = t(e.priority.toLowerCase());
 
         div.innerHTML = `
             <div class="planner-entry-header">
                 <h4>${e.title}</h4>
                 <div class="planner-entry-actions">
-                    <span class="planner-entry__priority ${priorityClass}">${e.priority}</span>
-                    <button class="icon-btn small edit-milestone-btn" data-index="${index}" title="Edit">✏️</button>
-                    <button class="icon-btn small delete-milestone-btn" data-index="${index}" title="Delete">🗑️</button>
+                    <span class="planner-entry__priority ${priorityClass}">${priorityText}</span>
+                    <button class="icon-btn small edit-milestone-btn" data-index="${index}" title="${t('editMilestone')}">✏️</button>
+                    <button class="icon-btn small delete-milestone-btn" data-index="${index}" title="${t('delete')}">🗑️</button>
                 </div>
             </div>
             ${e.notes ? `<p class="planner-entry-notes">${e.notes}</p>` : ''}
@@ -61,10 +62,10 @@ function setupPlannerPanel() {
     });
 
     listEl.querySelectorAll(".delete-milestone-btn").forEach(btn => {
-        btn.onclick = (e) => {
+        btn.onclick = async (e) => {
             e.stopPropagation();
             const index = parseInt(btn.dataset.index);
-            if (confirm("Delete this milestone?")) {
+            if (await customConfirm(t('deleteMilestoneConfirm') || "Delete this milestone?", { title: t('delete'), confirmText: t('delete'), danger: true })) {
                 window.currentProject.planner.entries.splice(index, 1);
                 saveData(window.currentData);
                 setupPlannerPanel();
@@ -104,9 +105,9 @@ function setupPlannerPanel() {
                     entry.priority = priorityInput.value || "Medium";
                 }
                 delete newForm.dataset.editIndex;
-                newForm.querySelector("h3").textContent = "New Milestone";
-                newForm.querySelector("button[type='submit']").textContent = "Add Milestone";
-                document.getElementById("plannerClearLowBtn").textContent = "Clear Low Priority";
+                newForm.querySelector("h3").textContent = t('newMilestone');
+                newForm.querySelector("button[type='submit']").textContent = t('addMilestone');
+                document.getElementById("plannerClearLowBtn").textContent = t('clearLowPriority');
             } else {
                 // Create new
                 const newEntry = {
@@ -138,7 +139,7 @@ function setupPlannerPanel() {
         const newBtn = clearBtn.cloneNode(true);
         clearBtn.parentNode.replaceChild(newBtn, clearBtn);
 
-        newBtn.onclick = () => {
+        newBtn.onclick = async () => {
             const form = document.getElementById("plannerEntryForm");
 
             // Check if we're in edit mode
@@ -146,12 +147,12 @@ function setupPlannerPanel() {
                 // Cancel edit mode
                 delete form.dataset.editIndex;
                 form.reset();
-                form.querySelector("h3").textContent = "New Milestone";
-                form.querySelector("button[type='submit']").textContent = "Add Milestone";
-                newBtn.textContent = "Clear Low Priority";
+                form.querySelector("h3").textContent = t('newMilestone');
+                form.querySelector("button[type='submit']").textContent = t('addMilestone');
+                newBtn.textContent = t('clearLowPriority');
             } else {
                 // Clear low priority items
-                if (confirm("Remove all 'Low Priority' items?")) {
+                if (await customConfirm(t('removeAllLowPriority') || "Remove all 'Low Priority' items?", { title: t('clearLowPriority'), confirmText: t('delete'), danger: true })) {
                     window.currentProject.planner.entries = window.currentProject.planner.entries.filter(e => e.priority !== "Low");
                     saveData(window.currentData);
                     setupPlannerPanel();
@@ -191,9 +192,9 @@ function editMilestone(index) {
     priorityInput.value = entry.priority || "Medium";
 
     form.dataset.editIndex = index;
-    form.querySelector("h3").textContent = "Edit Milestone";
-    form.querySelector("button[type='submit']").textContent = "Save Changes";
-    document.getElementById("plannerClearLowBtn").textContent = "Cancel Edit";
+    form.querySelector("h3").textContent = t('editMilestone');
+    form.querySelector("button[type='submit']").textContent = t('saveChanges');
+    document.getElementById("plannerClearLowBtn").textContent = t('cancelEdit');
 
     // Scroll form into view
     form.scrollIntoView({ behavior: "smooth", block: "nearest" });

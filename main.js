@@ -72,10 +72,8 @@ function createWindow() {
     },
     backgroundColor: '#1a1a2e',
     show: false, // Keep hidden until ready
-    // Native window features
-    frame: false, // Frameless window for custom title bar
-    titleBarStyle: 'hidden', // Hide default title bar
-    titleBarOverlay: false, // We are building our own
+    // Native window features - use OS frame
+    frame: true,
     // Windows-specific
     autoHideMenuBar: true,
     // Better window behavior
@@ -269,6 +267,48 @@ if (ipcMain) {
 
   ipcMain.on('window-close', () => {
     if (mainWindow) mainWindow.close();
+  });
+
+  // Cache Management
+  ipcMain.handle('get-cache-size', async () => {
+    if (mainWindow) {
+      const session = mainWindow.webContents.session;
+      try {
+        const size = await session.getCacheSize();
+        return size;
+      } catch (error) {
+        log.error('Error getting cache size:', error);
+        return 0;
+      }
+    }
+    return 0;
+  });
+
+  ipcMain.handle('clear-cache', async () => {
+    if (mainWindow) {
+      const session = mainWindow.webContents.session;
+      try {
+        await session.clearCache();
+        await session.clearStorageData({ storages: ['appcache', 'cachestorage'] });
+        log.info('Cache cleared successfully');
+        return true;
+      } catch (error) {
+        log.error('Error clearing cache:', error);
+        return false;
+      }
+    }
+    return false;
+  });
+
+  ipcMain.handle('set-cache-enabled', async (event, enabled) => {
+    // Note: Electron doesn't have a direct API to disable caching
+    // We can only clear the cache. The toggle will control whether we auto-clear on startup.
+    const store = require('electron').app;
+    // Store preference (will be read on startup)
+    if (mainWindow) {
+      mainWindow.webContents.send('cache-preference-changed', enabled);
+    }
+    return enabled;
   });
 }
 

@@ -1,4 +1,77 @@
-﻿const PLANNER_STATUSES = ["Backlog", "Next", "Done"];
+﻿// ======================
+// Custom Dialog System (replaces browser confirm/alert)
+// ======================
+
+const CustomDialog = {
+    overlay: null,
+
+    init() {
+        if (this.overlay) return;
+        this.overlay = document.createElement('div');
+        this.overlay.id = 'customDialogOverlay';
+        this.overlay.className = 'custom-dialog-overlay hidden';
+        document.body.appendChild(this.overlay);
+    },
+
+    show(options) {
+        this.init();
+        const { title, message, type = 'confirm', confirmText = 'Confirm', cancelText = 'Cancel', danger = false } = options;
+
+        return new Promise((resolve) => {
+            this.overlay.innerHTML = `
+                <div class="custom-dialog">
+                    <div class="custom-dialog-header">
+                        <h3>${title || (type === 'alert' ? 'Notice' : 'Confirm')}</h3>
+                    </div>
+                    <div class="custom-dialog-body">
+                        <p>${message}</p>
+                    </div>
+                    <div class="custom-dialog-footer">
+                        ${type === 'confirm' ? `<button class="custom-dialog-btn cancel-btn">${cancelText}</button>` : ''}
+                        <button class="custom-dialog-btn confirm-btn ${danger ? 'danger' : ''}">${type === 'alert' ? 'OK' : confirmText}</button>
+                    </div>
+                </div>
+            `;
+
+            this.overlay.classList.remove('hidden');
+
+            const confirmBtn = this.overlay.querySelector('.confirm-btn');
+            const cancelBtn = this.overlay.querySelector('.cancel-btn');
+
+            const close = (result) => {
+                this.overlay.classList.add('hidden');
+                resolve(result);
+            };
+
+            confirmBtn.onclick = () => close(true);
+            if (cancelBtn) cancelBtn.onclick = () => close(false);
+
+            // Close on backdrop click for alerts
+            if (type === 'alert') {
+                this.overlay.onclick = (e) => {
+                    if (e.target === this.overlay) close(true);
+                };
+            }
+
+            // Focus confirm button
+            confirmBtn.focus();
+        });
+    },
+
+    confirm(message, options = {}) {
+        return this.show({ message, type: 'confirm', ...options });
+    },
+
+    alert(message, options = {}) {
+        return this.show({ message, type: 'alert', ...options });
+    }
+};
+
+// Make globally accessible
+window.customConfirm = (message, options) => CustomDialog.confirm(message, options);
+window.customAlert = (message, options) => CustomDialog.alert(message, options);
+
+const PLANNER_STATUSES = ["Backlog", "Next", "Done"];
 
 // ======================
 // IDB Helper (Mini IndexedDB Wrapper)
@@ -285,7 +358,7 @@ async function saveData(data) {
         }
     } catch (e) {
         console.error("Failed to save data to DB", e);
-        alert("Error saving data. Disk space might be full.");
+        customAlert("Error saving data. Disk space might be full.", { title: "Save Error" });
     }
 }
 
@@ -472,7 +545,7 @@ async function initHomePage() {
 
     async function saveProjectEdit() {
         if (!editingProject) return;
-        editingProject.name = projectEditNameInput.value.trim() || "Untitled Project";
+        editingProject.name = projectEditNameInput.value.trim() || t('untitled') + " " + t('newProject').replace('+ ', '');
         editingProject.description = projectEditDescription.value.trim();
         editingProject.icon = editingIcon;
         editingProject.cover = editingCover;
@@ -498,9 +571,9 @@ async function initHomePage() {
             createdAt: new Date().toISOString(),
             icon: "★", cover: "blue", coverMode: "color", status: "active",
             lists: [
-                { id: generateId("list"), title: "To Do", cards: [] },
-                { id: generateId("list"), title: "Active", cards: [] },
-                { id: generateId("list"), title: "Done", cards: [] }
+                { id: generateId("list"), title: t('toDo'), cards: [] },
+                { id: generateId("list"), title: t('active'), cards: [] },
+                { id: generateId("list"), title: t('done'), cards: [] }
             ],
             archive: { cards: [], lists: [] }, planner: { entries: [] },
             whiteboard: { items: [], strokes: [], layers: [], pen: { color: "#000000", size: 5, opacity: 1.0 }, view: { x: 0, y: 0, scale: 1.0 } },
@@ -528,7 +601,7 @@ async function initHomePage() {
             return;
         }
 
-        const columns = [{ key: "active", title: "Active" }, { key: "todo", title: "To Do" }, { key: "finished", title: "Finished" }];
+        const columns = [{ key: "active", title: t('active') }, { key: "todo", title: t('toDo') }, { key: "finished", title: t('finished') }];
 
         columns.forEach(col => {
             const section = document.createElement("section"); section.className = "project-section";
@@ -540,7 +613,7 @@ async function initHomePage() {
 
             if (projectsInCol.length === 0) {
                 const empty = document.createElement("div"); empty.className = "project-empty";
-                empty.innerHTML = `<strong>No ${col.title} Projects</strong><p>Drag projects here</p><button class="secondary-btn small">Create New</button>`;
+                empty.innerHTML = `<strong>${t('noProjectsIn')} ${col.title} ${t('projects')}</strong><p>${t('dragProjectsHere')}</p><button class="secondary-btn small">${t('createNew')}</button>`;
                 empty.querySelector("button").onclick = () => openProjectEditModal(createProjectStub(), { isNew: true });
                 body.appendChild(empty);
             }
@@ -549,13 +622,13 @@ async function initHomePage() {
                 const card = document.createElement("div"); card.className = "project-card";
                 card.dataset.cover = proj.cover; card.draggable = true;
                 card.innerHTML = `
-                <div class="project-card-header"><span class="project-card-icon">${proj.icon || '★'}</span><div class="project-card-title">${proj.name || "Untitled"}</div></div>
-                <div class="project-card-meta">${proj.lists.length} lists</div>
-                <div class="project-tags">${(proj.tags || []).slice(0, 3).map(t => `<span class="project-tag">${t.text}</span>`).join('')}</div>
+                <div class="project-card-header"><span class="project-card-icon">${proj.icon || '★'}</span><div class="project-card-title">${proj.name || t('untitled')}</div></div>
+                <div class="project-card-meta">${proj.lists.length} ${t('listsCount')}</div>
+                <div class="project-tags">${(proj.tags || []).slice(0, 3).map(tag => `<span class="project-tag">${tag.text}</span>`).join('')}</div>
                 <div class="project-card-actions">
-                    <button class="text-btn btn-settings">Settings</button>
-                    <button class="text-btn btn-export">Export</button>
-                    <button class="text-btn danger btn-delete">Delete</button>
+                    <button class="text-btn btn-settings">${t('settings')}</button>
+                    <button class="text-btn btn-export">${t('export')}</button>
+                    <button class="text-btn danger btn-delete">${t('delete')}</button>
                 </div>
             `;
                 card.onclick = (e) => { if (e.target.closest("button")) return; window.location.href = `project.html?id=${proj.id}`; };
@@ -566,7 +639,11 @@ async function initHomePage() {
                 };
                 card.querySelector(".btn-delete").onclick = async (e) => {
                     e.stopPropagation();
-                    if (confirm("Delete project?")) { data.projects = data.projects.filter(p => p.id !== proj.id); await saveData(data); renderProjectsByStatus(); }
+                    if (await customConfirm(t('deleteProjectConfirm'), { title: t('deleteProject'), confirmText: t('delete'), danger: true })) {
+                        data.projects = data.projects.filter(p => p.id !== proj.id);
+                        await saveData(data);
+                        renderProjectsByStatus();
+                    }
                 };
                 card.addEventListener("dragstart", (e) => { draggedProjectId = proj.id; e.dataTransfer.effectAllowed = "move"; e.dataTransfer.setData("text/plain", proj.id); setTimeout(() => card.style.opacity = "0.5", 0); });
                 card.addEventListener("dragend", () => { draggedProjectId = null; card.style.opacity = "1"; if (projectPlaceholder?.parentNode) projectPlaceholder.remove(); projectPlaceholder = null; });
@@ -649,10 +726,9 @@ async function initHomePage() {
                 try {
                     const json = JSON.parse(reader.result);
                     if (json.projects && Array.isArray(json.projects)) {
-                        const action = confirm(
-                            `Import ${json.projects.length} project(s).\n\n` +
-                            `OK = Replace entire workspace\n` +
-                            `Cancel = Merge with existing projects`
+                        const action = await customConfirm(
+                            `Import ${json.projects.length} project(s).\n\nConfirm = Replace entire workspace\nCancel = Merge with existing projects`,
+                            { title: "Import Workspace", confirmText: "Replace", cancelText: "Merge" }
                         );
 
                         if (action) {
@@ -671,10 +747,10 @@ async function initHomePage() {
                         await saveData(data);
                         renderProjectsByStatus();
                     } else {
-                        alert("Invalid workspace file. Expected {projects: [...]}");
+                        await customAlert("Invalid workspace file. Expected {projects: [...]}", { title: "Import Error" });
                     }
                 } catch (err) {
-                    alert("Invalid JSON file");
+                    await customAlert("Invalid JSON file", { title: "Import Error" });
                     console.error(err);
                 }
             }
@@ -709,7 +785,7 @@ async function initHomePage() {
                             Object.assign(editingProject, p, { id: preservedId });
                         }
                     } catch (err) {
-                        alert("Invalid JSON file");
+                        customAlert("Invalid JSON file", { title: "Import Error" });
                         console.error(err);
                     }
                 };
@@ -720,6 +796,11 @@ async function initHomePage() {
     }
 
     renderProjectsByStatus();
+
+    // Re-render when language changes
+    window.addEventListener('languageChanged', () => {
+        renderProjectsByStatus();
+    });
 }
 
 // ======================
@@ -727,6 +808,15 @@ async function initHomePage() {
 // ======================
 
 async function initProjectPage() {
+    // Show Loading Overlay
+    const loadingOverlay = document.createElement('div');
+    loadingOverlay.id = 'projectLoadingOverlay';
+    loadingOverlay.innerHTML = `
+        <div class="loading-spinner"></div>
+        <span>Loading project...</span>
+    `;
+    document.body.appendChild(loadingOverlay);
+
     // Request persistent storage early
     requestPersistentStorage();
 
@@ -870,7 +960,7 @@ async function initProjectPage() {
         archivedCardsContainer.innerHTML = "";
         const archived = currentProject.archive?.cards || [];
         if (archived.length === 0) {
-            archivedCardsContainer.innerHTML = "<p>No archived cards yet.</p>";
+            archivedCardsContainer.innerHTML = `<p>${t('noArchivedCards')}</p>`;
             return;
         }
         archived.forEach((c, index) => {
@@ -881,8 +971,8 @@ async function initProjectPage() {
                   <span class="archived-card-title">${c.title || "(untitled card)"}</span>
               </div>
               <div class="archived-card-row-actions">
-                  <button class="text-btn small" data-action="restore" data-index="${index}">Restore</button>
-                  <button class="text-btn small danger-text" data-action="delete" data-index="${index}">Delete</button>
+                  <button class="text-btn small" data-action="restore" data-index="${index}">${t('restore')}</button>
+                  <button class="text-btn small danger-text" data-action="delete" data-index="${index}">${t('delete')}</button>
               </div>
           `;
             archivedCardsContainer.appendChild(div);
@@ -890,7 +980,7 @@ async function initProjectPage() {
 
         // Wire restore/delete per item
         archivedCardsContainer.querySelectorAll("button[data-action]").forEach(btn => {
-            btn.onclick = () => {
+            btn.onclick = async () => {
                 const idx = parseInt(btn.dataset.index, 10);
                 const action = btn.dataset.action;
                 const archivedCards = currentProject.archive.cards || [];
@@ -908,7 +998,7 @@ async function initProjectPage() {
                     renderArchive();
                     updateMenuStats();
                 } else if (action === "delete") {
-                    if (!confirm("Delete this archived card permanently?")) return;
+                    if (!await customConfirm(t('deleteArchivedCardConfirm'), { title: t('delete'), confirmText: t('delete'), danger: true })) return;
                     archivedCards.splice(idx, 1);
                     saveData(window.currentData);
                     renderArchive();
@@ -949,10 +1039,10 @@ async function initProjectPage() {
             if (isHidden) {
                 renderArchive();
                 archivePanel.classList.remove("hidden");
-                showArchiveBtn.textContent = "Hide Archive";
+                showArchiveBtn.textContent = t('hideArchive');
             } else {
                 archivePanel.classList.add("hidden");
-                showArchiveBtn.textContent = "View Archive";
+                showArchiveBtn.textContent = t('viewArchive');
             }
         };
     }
@@ -1019,8 +1109,8 @@ async function initProjectPage() {
     const deleteAllListsBtn = document.getElementById("deleteAllListsBtn");
 
     if (deleteAllCardsBtn) {
-        deleteAllCardsBtn.onclick = () => {
-            if (!confirm("⚠️ Delete ALL cards from ALL lists? This cannot be undone!")) return;
+        deleteAllCardsBtn.onclick = async () => {
+            if (!await customConfirm(t('deleteAllCardsConfirm'), { title: t('deleteAllCards'), confirmText: t('deleteAll'), danger: true })) return;
             currentProject.lists.forEach(list => {
                 list.cards = [];
             });
@@ -1031,8 +1121,8 @@ async function initProjectPage() {
     }
 
     if (deleteAllListsBtn) {
-        deleteAllListsBtn.onclick = () => {
-            if (!confirm("⚠️ Delete ALL lists and their cards? This cannot be undone!")) return;
+        deleteAllListsBtn.onclick = async () => {
+            if (!await customConfirm(t('deleteAllListsConfirm'), { title: t('deleteAllLists'), confirmText: t('deleteAll'), danger: true })) return;
             currentProject.lists = [];
             saveData(window.currentData);
             renderBoard();
@@ -1087,8 +1177,8 @@ async function initProjectPage() {
                 window.draggedListId = null;
                 el.style.opacity = "1";
             });
-            el.querySelector(".delete-list-btn").onclick = () => {
-                if (confirm(`Delete list "${list.title}"?`)) {
+            el.querySelector(".delete-list-btn").onclick = async () => {
+                if (await customConfirm(`${t('deleteListConfirm')} "${list.title}"?`, { title: t('deleteList'), confirmText: t('delete'), danger: true })) {
                     currentProject.lists = currentProject.lists.filter(l => l.id !== list.id);
                     saveData(window.currentData);
                     renderBoard();
@@ -1232,15 +1322,20 @@ async function initProjectPage() {
             // 5. Render Cards in the List
             list.cards.forEach(card => {
                 const cEl = document.createElement("div");
-                cEl.className = "card";
+                cEl.className = "card" + (card.completed ? " card-completed" : "");
                 cEl.draggable = true;
 
-                // Check for description or checklist completion for visual queues
+                // Count checklist items from description (notes-style)
                 let metaHtml = '';
-                if (card.description) metaHtml += '<span class="card-meta-icon">🗒️</span>';
-                const completedCount = (card.checklist || []).filter(i => i.completed).length;
-                if (card.checklist && card.checklist.length > 0) {
-                    metaHtml += `<span class="card-meta-icon">${completedCount}/${card.checklist.length}</span>`;
+                if (card.description) {
+                    const descDoc = new DOMParser().parseFromString(card.description, 'text/html');
+                    const checklistItems = descDoc.querySelectorAll('.wb-checklist li');
+                    if (checklistItems.length > 0) {
+                        const checkedCount = Array.from(checklistItems).filter(li => li.classList.contains('checked')).length;
+                        metaHtml += `<span class="card-meta-icon">☑ ${checkedCount}/${checklistItems.length}</span>`;
+                    } else {
+                        metaHtml += '<span class="card-meta-icon">🗒️</span>';
+                    }
                 }
 
                 // Cover preview
@@ -1272,14 +1367,47 @@ async function initProjectPage() {
                     labelsHtml += `</div>`;
                 }
 
+                // Card completion checkbox
+                const completionCheckbox = `<input type="checkbox" class="card-completion-checkbox" ${card.completed ? 'checked' : ''} title="Mark as complete" />`;
+
                 cEl.innerHTML = `
                   ${coverHtml}
-                  <div class="card-title">${card.title}</div>
+                  <div class="card-content-row">
+                    ${completionCheckbox}
+                    <div class="card-title">${card.title}</div>
+                  </div>
                   ${labelsHtml}
                   <div class="card-meta">${metaHtml}</div>
               `;
 
-                cEl.onclick = () => window.openCardModal(list.id, card.id);
+                // Handle completion checkbox click
+                cEl.querySelector('.card-completion-checkbox').onclick = (e) => {
+                    e.stopPropagation();
+                    card.completed = e.target.checked;
+
+                    // Two-way sync: if card is checked, check all internal checkboxes
+                    if (card.description) {
+                        const descDoc = new DOMParser().parseFromString(card.description, 'text/html');
+                        // Sync all checklist items with card completion state
+                        descDoc.querySelectorAll('.wb-checklist li').forEach(li => {
+                            if (e.target.checked) {
+                                li.classList.add('checked');
+                            } else {
+                                li.classList.remove('checked');
+                            }
+                        });
+                        card.description = descDoc.body.innerHTML;
+                    }
+
+                    saveData(window.currentData);
+                    renderBoard();
+                };
+
+                cEl.onclick = (e) => {
+                    if (e.target.type !== 'checkbox') {
+                        window.openCardModal(list.id, card.id);
+                    }
+                };
 
                 // Card Drag Start (Initial Setup)
                 cEl.addEventListener("dragstart", e => {
@@ -1384,6 +1512,10 @@ async function initProjectPage() {
             const targetId = button.dataset.viewTarget;
             document.getElementById(targetId).classList.remove("hidden");
 
+            // Hide whiteboard context menu when switching views
+            const wbContextMenu = document.getElementById('wbContextMenu');
+            if (wbContextMenu) wbContextMenu.classList.add('hidden');
+
             // Toggle layout padding for whiteboard
             const layoutContainer = document.querySelector(".layout-container");
             if (targetId === "whiteboardView") {
@@ -1419,12 +1551,9 @@ async function initProjectPage() {
 
         // UI Elements
         const titleIn = document.getElementById("cardTitleInput");
-        const descIn = document.getElementById("cardDescriptionInput");
-        const dueIn = document.getElementById("cardDueDateInput");
-        const durationIn = document.getElementById("cardDurationInput");
-        const checklistContainer = document.getElementById("checklistContainer");
-        const newChecklistItemInput = document.getElementById("newChecklistItemInput");
-        const addChecklistItemBtn = document.getElementById("addChecklistItemBtn");
+        const descEditor = document.getElementById("cardDescriptionEditor");
+        const startDateIn = document.getElementById("cardStartDateInput");
+        const endDateIn = document.getElementById("cardEndDateInput");
         const coverColorModeBtn = document.getElementById("cardCoverColorModeBtn");
         const coverImageModeBtn = document.getElementById("cardCoverImageModeBtn");
         const coverClearBtn = document.getElementById("cardCoverClearBtn");
@@ -1434,27 +1563,26 @@ async function initProjectPage() {
         const coverPositionSelect = document.getElementById("cardCoverPositionSelect");
         const coverHeaderBtn = document.getElementById("cardCoverHeaderBtn");
         const coverPopover = document.getElementById("cardCoverPopover");
-        const labelColorEls = document.querySelectorAll(".label-color");
         const labelNameInput = document.getElementById("cardLabelsInput");
         const addLabelBtn = document.getElementById("addLabelBtn");
         const labelListContainer = document.getElementById("labelListContainer");
 
         // Ensure card structure is robust
         if (!card.labels) card.labels = [];
-        if (!card.checklist) card.checklist = [];
         if (!card.description) card.description = "";
         if (!card.cover) card.cover = { type: null, color: null, image: null, text: "", position: "center" };
         if (!card.cover.position) card.cover.position = "center";
+        if (card.completed === undefined) card.completed = false;
 
-        // Migration: Use dueDate as startDate if startDate is missing
+        // Migration: Use dueDate as endDate if missing
         if (!card.startDate && card.dueDate) card.startDate = card.dueDate;
-        if (!card.duration) card.duration = 1;
+        if (!card.endDate && card.dueDate) card.endDate = card.dueDate;
 
         // 1. Hydrate UI
         titleIn.value = card.title;
-        descIn.value = card.description;
-        dueIn.value = card.startDate || '';
-        if (durationIn) durationIn.value = card.duration || 1;
+        descEditor.innerHTML = card.description || '';
+        startDateIn.value = card.startDate || '';
+        endDateIn.value = card.endDate || card.dueDate || '';
 
         const modalBanner = document.getElementById("modalCoverBanner");
         const coverTextOptions = document.getElementById("coverTextOptions");
@@ -1594,10 +1722,10 @@ async function initProjectPage() {
                 const row = document.createElement("div");
                 row.className = "label-row";
                 row.innerHTML = `
-                  <span class="card-label" style="background:${l.color || "#e5e7eb"}33;border-color:${l.color || "#e5e7eb"}">${l.name || ""}</span>
-                  <button class="text-btn small" data-idx="${idx}">Remove</button>
+                  <span class="card-label" style="background:${l.color || "#e5e7eb"}33;border-color:${l.color || "#e5e7eb"}">${l.name || ""}<button class="label-remove-btn" data-idx="${idx}">✕</button></span>
               `;
-                row.querySelector("button").onclick = () => {
+                row.querySelector(".label-remove-btn").onclick = (e) => {
+                    e.stopPropagation();
                     card.labels.splice(idx, 1);
                     saveCardData();
                     renderLabels();
@@ -1607,25 +1735,21 @@ async function initProjectPage() {
             });
         };
 
-        if (labelColorEls) {
-            labelColorEls.forEach(el => {
-                el.onclick = () => {
-                    // Update selection state
-                    labelColorEls.forEach(c => c.classList.remove("selected"));
-                    el.classList.add("selected");
-                    selectedColor = el.dataset.color;
-                };
-            });
-            // Initialize selection
-            const initialSelected = Array.from(labelColorEls).find(el => el.dataset.color === selectedColor);
-            if (initialSelected) initialSelected.classList.add("selected");
-        }
+        // Random colors for labels
+        const labelColors = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#3b82f6', '#a855f7', '#ec4899'];
 
         if (addLabelBtn && labelNameInput) {
             const addLabel = () => {
                 const name = labelNameInput.value.trim();
                 if (!name) return;
-                card.labels.push({ name, color: selectedColor });
+                // Use cover color if available, otherwise random
+                let labelColor;
+                if (card.cover && card.cover.color) {
+                    labelColor = card.cover.color;
+                } else {
+                    labelColor = labelColors[Math.floor(Math.random() * labelColors.length)];
+                }
+                card.labels.push({ name, color: labelColor });
                 labelNameInput.value = "";
                 saveCardData();
                 renderLabels();
@@ -1635,60 +1759,100 @@ async function initProjectPage() {
             labelNameInput.onkeydown = (e) => { if (e.key === "Enter") addLabel(); };
         }
 
-        // --- Checklist Logic ---
-        const renderChecklist = () => {
-            checklistContainer.innerHTML = '';
-            card.checklist.forEach((item, index) => {
-                const li = document.createElement("li");
-                li.className = "checklist-item";
-                li.innerHTML = `
-                  <input type="checkbox" data-index="${index}" ${item.completed ? 'checked' : ''} />
-                  <span contenteditable="true" data-index="${index}" style="${item.completed ? 'text-decoration: line-through; color: var(--text-muted);' : ''}">${item.text}</span>
-              `;
-                li.querySelector('input').onchange = (e) => {
-                    item.completed = e.target.checked;
-                    saveCardData();
-                    renderChecklist();
+        // --- Rich Text Toolbar Logic ---
+        const toolbar = document.querySelector('.rich-text-toolbar');
+        if (toolbar) {
+            toolbar.querySelectorAll('.rt-btn[data-cmd]').forEach(btn => {
+                btn.onclick = (e) => {
+                    e.preventDefault();
+                    const cmd = btn.dataset.cmd;
+                    document.execCommand(cmd, false, null);
+                    descEditor.focus();
                 };
-                li.querySelector('span').onblur = (e) => {
-                    item.text = e.target.textContent;
-                    saveCardData();
-                };
-                checklistContainer.appendChild(li);
             });
-        };
 
-        const addChecklistItem = () => {
-            const text = newChecklistItemInput.value.trim();
-            if (text) {
-                card.checklist.push({ text, completed: false });
-                newChecklistItemInput.value = '';
-                saveCardData();
-                renderChecklist();
+            // Insert checklist button (notes-style)
+            const insertCheckboxBtn = document.getElementById('insertCheckboxBtn');
+            if (insertCheckboxBtn) {
+                insertCheckboxBtn.onclick = (e) => {
+                    e.preventDefault();
+                    // Use the same approach as notes: insertUnorderedList then add wb-checklist class
+                    document.execCommand("insertUnorderedList", false, null);
+                    const selection = window.getSelection();
+                    if (selection.rangeCount > 0) {
+                        let node = selection.anchorNode;
+                        while (node && node !== descEditor) {
+                            if (node.nodeName === 'UL') {
+                                if (node.classList.contains('wb-checklist')) {
+                                    node.classList.remove('wb-checklist');
+                                } else {
+                                    node.classList.add('wb-checklist');
+                                }
+                                break;
+                            }
+                            node = node.parentNode;
+                        }
+                    }
+                    descEditor.focus();
+                };
             }
+        }
+
+        // Handle checklist item clicks in description (like notes)
+        // Use mousedown to catch before contenteditable steals focus
+        descEditor.addEventListener('mousedown', (e) => {
+            // Check if clicking on an LI inside wb-checklist
+            let target = e.target;
+            while (target && target !== descEditor) {
+                if (target.tagName === 'LI') {
+                    const ul = target.closest('.wb-checklist');
+                    if (ul) {
+                        const rect = target.getBoundingClientRect();
+                        const x = e.clientX - rect.left;
+                        if (x < 30) { // Click on checkbox area (left side)
+                            e.preventDefault();
+                            e.stopPropagation();
+                            target.classList.toggle('checked');
+                            updateCardCompletion();
+                            return;
+                        }
+                    }
+                    break;
+                }
+                target = target.parentElement;
+            }
+        });
+
+        // --- Update Card Completion Based on Checkboxes ---
+        const updateCardCompletion = () => {
+            const checklistItems = descEditor.querySelectorAll('.wb-checklist li');
+            if (checklistItems.length === 0) return;
+
+            const allChecked = Array.from(checklistItems).every(li => li.classList.contains('checked'));
+            card.completed = allChecked;
+
+            // Save the current state of the description with checked states
+            card.description = descEditor.innerHTML;
+            saveData(window.currentData);
         };
 
-        addChecklistItemBtn.onclick = addChecklistItem;
-        newChecklistItemInput.onkeydown = (e) => { if (e.key === "Enter") addChecklistItem(); };
+        // Handle checkbox changes in description
+        descEditor.addEventListener('change', (e) => {
+            if (e.target.type === 'checkbox') {
+                e.target.closest('.rt-checkbox')?.classList.toggle('checked', e.target.checked);
+                updateCardCompletion();
+            }
+        });
 
         // --- Save & Close Function ---
         const saveCardData = () => {
             card.title = titleIn.value.trim();
-            card.description = descIn.value.trim();
+            card.description = descEditor.innerHTML;
 
-            // Start Date & Duration Logic
-            card.startDate = dueIn.value;
-            card.duration = parseInt(durationIn ? durationIn.value : 1) || 1;
-
-            // Calculate Due Date
-            if (card.startDate) {
-                const start = new Date(card.startDate);
-                const end = new Date(start);
-                end.setDate(start.getDate() + (card.duration - 1)); // Duration 1 = same day
-                card.dueDate = end.toISOString().split('T')[0];
-            } else {
-                card.dueDate = null;
-            }
+            // Start Date & End Date
+            card.startDate = startDateIn.value;
+            card.endDate = endDateIn.value;
+            card.dueDate = card.endDate; // Keep dueDate for backwards compatibility
 
             // labels already mutated live
             saveData(window.currentData);
@@ -1707,9 +1871,9 @@ async function initProjectPage() {
 
         // Archive button handler
         if (archiveCardBtn) {
-            archiveCardBtn.onclick = () => {
+            archiveCardBtn.onclick = async () => {
                 if (!window.currentProject.archive) window.currentProject.archive = { cards: [], lists: [] };
-                if (confirm("Archive this card?")) {
+                if (await customConfirm(t('archiveCardConfirm'), { title: t('archive'), confirmText: t('archive') })) {
                     // Remove from its list
                     list.cards = list.cards.filter(c => c.id !== card.id);
                     // Push into archive with list reference
@@ -1726,8 +1890,8 @@ async function initProjectPage() {
 
         // Permanent Delete button handler
         if (permanentDeleteCardBtn) {
-            permanentDeleteCardBtn.onclick = () => {
-                if (confirm("Permanently delete this card?\n\nThis action cannot be undone.")) {
+            permanentDeleteCardBtn.onclick = async () => {
+                if (await customConfirm(t('deleteCardConfirm'), { title: t('delete'), confirmText: t('delete'), danger: true })) {
                     // Remove from its list
                     list.cards = list.cards.filter(c => c.id !== card.id);
                     saveData(window.currentData);
@@ -1751,6 +1915,47 @@ async function initProjectPage() {
     if (window.initWhiteboard) {
         window.initWhiteboard();
     }
+
+    // Wait for all resources (images, fonts, etc.) and ensure DOM is fully ready
+    const hideLoadingOverlay = () => {
+        const loadingOverlayEl = document.getElementById('projectLoadingOverlay');
+        if (loadingOverlayEl) {
+            loadingOverlayEl.classList.add('fade-out');
+            setTimeout(() => loadingOverlayEl.remove(), 300);
+        }
+    };
+
+    // Wait for all images to load
+    const images = document.querySelectorAll('img');
+    const imagePromises = Array.from(images).map(img => {
+        if (img.complete) return Promise.resolve();
+        return new Promise(resolve => {
+            img.onload = resolve;
+            img.onerror = resolve; // Still resolve on error to not block
+        });
+    });
+
+    // Wait for document to be fully loaded (including stylesheets)
+    if (document.readyState === 'complete') {
+        Promise.all(imagePromises).then(() => {
+            // Use requestAnimationFrame to ensure DOM is painted
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    hideLoadingOverlay();
+                });
+            });
+        });
+    } else {
+        window.addEventListener('load', () => {
+            Promise.all(imagePromises).then(() => {
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        hideLoadingOverlay();
+                    });
+                });
+            });
+        });
+    }
 }
 
 
@@ -1768,7 +1973,7 @@ toast.style.cssText = `
   z-index: 9999; pointer-events: none;
   display: flex; align-items: center; gap: 8px;
 `;
-toast.innerHTML = `<span>💾</span> All changes saved`;
+toast.innerHTML = `<span>💾</span> ${t('allChangesSaved')}`;
 document.body.appendChild(toast);
 
 // Listen for your existing custom event

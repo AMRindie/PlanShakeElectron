@@ -23,16 +23,16 @@
     function initNotesEditor(container, project, onSave) {
         currentProject = project;
         saveCallback = onSave;
-        
+
         const existingHeader = document.querySelector('#notesView .panel-header');
-        if(existingHeader) existingHeader.style.display = 'none';
+        if (existingHeader) existingHeader.style.display = 'none';
 
         container.innerHTML = "";
         container.className = "notes-wrapper";
 
         // 1. Toolbar
         const toolbar = document.createElement("div");
-        toolbar.className = "wb-toolbar notes-toolbar-fixed"; 
+        toolbar.className = "wb-toolbar notes-toolbar-fixed";
         toolbar.innerHTML = `
           <div class="wb-tool-group">
               <button data-cmd="undo" class="wb-btn" title="Undo"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg></button>
@@ -149,7 +149,7 @@
         const tocContainer = document.createElement("div");
         tocContainer.className = "wb-layer-panel notes-toc-panel";
         tocContainer.innerHTML = `
-            <div class="layer-header" style="justify-content:center;">Jump To</div>
+            <div class="layer-header" style="justify-content:center;">${t('jumpTo') || 'Jump To'}</div>
             <div id="notesTocList" class="layer-list notes-toc-list"></div>
         `;
         tocEl = tocContainer.querySelector("#notesTocList");
@@ -158,10 +158,10 @@
         pageWrapper.className = "notes-page-wrapper";
 
         editorEl = document.createElement("div");
-        editorEl.className = "notes-editor-content print-layout"; 
+        editorEl.className = "notes-editor-content print-layout";
         editorEl.contentEditable = true;
         editorEl.spellcheck = false;
-        editorEl.innerHTML = project.notes || "<p>Start typing your notes here...</p>";
+        editorEl.innerHTML = project.notes || `<p>${t('startTypingNotes')}</p>`;
 
         pageWrapper.appendChild(editorEl);
 
@@ -180,7 +180,7 @@
         container.appendChild(toolbar);
 
         bindEvents(toolbar);
-        generateTableOfContents(); 
+        generateTableOfContents();
     }
 
     function generateTableOfContents() {
@@ -188,7 +188,7 @@
         const headers = editorEl.querySelectorAll("h1, h2, h3");
         tocEl.innerHTML = "";
         if (headers.length === 0) {
-            tocEl.innerHTML = `<div style="padding:12px; color:var(--text-secondary); font-size:0.85rem; text-align:center;">No headers detected</div>`;
+            tocEl.innerHTML = `<div style="padding:12px; color:var(--text-secondary); font-size:0.85rem; text-align:center;">${t('noHeadersDetected')}</div>`;
             return;
         }
         headers.forEach((header, index) => {
@@ -196,7 +196,7 @@
             const item = document.createElement("div");
             const tagName = header.tagName.toLowerCase();
             item.className = `layer-item toc-item toc-${tagName}`;
-            item.innerHTML = `<span class="layer-name">${header.innerText || "(Untitled)"}</span>`;
+            item.innerHTML = `<span class="layer-name">${header.innerText || t('untitledHeader')}</span>`;
             item.onclick = () => {
                 header.scrollIntoView({ behavior: "smooth", block: "center" });
                 document.querySelectorAll(".toc-item").forEach(i => i.classList.remove("active"));
@@ -210,19 +210,19 @@
         const commands = ['bold', 'italic', 'underline', 'strikeThrough', 'insertUnorderedList', 'insertOrderedList'];
         commands.forEach(cmd => {
             const btn = document.querySelector(`button[data-cmd="${cmd}"]`);
-            if(btn) {
-                if(document.queryCommandState(cmd)) btn.classList.add('active');
+            if (btn) {
+                if (document.queryCommandState(cmd)) btn.classList.add('active');
                 else btn.classList.remove('active');
             }
         });
 
         const checklistBtn = document.getElementById('ntChecklistBtn');
-        if(checklistBtn) {
+        if (checklistBtn) {
             const selection = window.getSelection();
-            if(selection.rangeCount > 0) {
+            if (selection.rangeCount > 0) {
                 let node = selection.anchorNode;
-                while(node && node !== editorEl) {
-                    if(node.nodeName === 'UL' && node.classList.contains('wb-checklist')) {
+                while (node && node !== editorEl) {
+                    if (node.nodeName === 'UL' && node.classList.contains('wb-checklist')) {
                         checklistBtn.classList.add('active');
                         return;
                     }
@@ -234,26 +234,26 @@
 
         const alignIcon = document.getElementById('ntAlignIcon');
         const alignMenu = document.querySelector('.nt-align-menu');
-        if(alignIcon && alignMenu) {
+        if (alignIcon && alignMenu) {
             let currentAlign = 'justifyLeft';
-            if(document.queryCommandState('justifyCenter')) currentAlign = 'justifyCenter';
-            if(document.queryCommandState('justifyRight')) currentAlign = 'justifyRight';
-            if(document.queryCommandState('justifyFull')) currentAlign = 'justifyFull';
-            
+            if (document.queryCommandState('justifyCenter')) currentAlign = 'justifyCenter';
+            if (document.queryCommandState('justifyRight')) currentAlign = 'justifyRight';
+            if (document.queryCommandState('justifyFull')) currentAlign = 'justifyFull';
+
             alignIcon.innerHTML = ALIGN_ICONS[currentAlign];
-            
+
             alignMenu.querySelectorAll('button').forEach(b => {
                 b.classList.toggle('active', b.dataset.align === currentAlign);
             });
         }
 
         const formatSelect = document.getElementById("ntFormatSelect");
-        if(formatSelect) {
+        if (formatSelect) {
             let block = document.queryCommandValue('formatBlock') || 'p';
-            block = block.toLowerCase(); 
-            if(block === 'div') block = 'p';
-            if(!['h1','h2','h3','p'].includes(block)) block = 'p';
-            formatSelect.value = block; 
+            block = block.toLowerCase();
+            if (block === 'div') block = 'p';
+            if (!['h1', 'h2', 'h3', 'p'].includes(block)) block = 'p';
+            formatSelect.value = block;
         }
 
         const fontSelect = document.getElementById("ntFontSelect");
@@ -274,7 +274,7 @@
         toolbar.querySelectorAll("button[data-cmd]").forEach(btn => {
             btn.onclick = (e) => {
                 e.preventDefault();
-                if(btn.dataset.cmd === 'removeFormat') {
+                if (btn.dataset.cmd === 'removeFormat') {
                     document.execCommand('removeFormat', false, null);
                     document.execCommand('unlink', false, null);
                 } else {
@@ -282,7 +282,7 @@
                 }
                 editorEl.focus();
                 triggerSaveAndToc();
-                syncToolbarState(); 
+                syncToolbarState();
             };
         });
 
@@ -328,14 +328,14 @@
         window.addEventListener('scroll', () => alignMenu.classList.add('hidden'), true);
 
         const lineSelect = document.getElementById("ntLineHeight");
-        if(lineSelect) {
+        if (lineSelect) {
             lineSelect.onchange = () => {
                 const val = lineSelect.value;
                 const selection = window.getSelection();
-                if(selection.rangeCount > 0) {
+                if (selection.rangeCount > 0) {
                     let block = selection.getRangeAt(0).startContainer;
-                    while(block && block.nodeType !== 1) block = block.parentElement;
-                    if(block && block !== editorEl) {
+                    while (block && block.nodeType !== 1) block = block.parentElement;
+                    if (block && block !== editorEl) {
                         block.style.lineHeight = val;
                     } else {
                         document.execCommand("insertHTML", false, `<div style="line-height:${val}">${selection.toString()}</div>`);
@@ -343,7 +343,7 @@
                 }
                 editorEl.focus();
                 triggerSave();
-                lineSelect.value = ""; 
+                lineSelect.value = "";
             }
         }
 
@@ -351,39 +351,39 @@
         document.getElementById("ntDirRtl").onclick = () => setDirection("rtl");
 
         function setDirection(dir) {
-             const selection = window.getSelection();
-             if(selection.rangeCount) {
-                 let node = selection.anchorNode;
-                 while(node && node.nodeName !== 'DIV' && node.nodeName !== 'P' && node !== editorEl) {
-                     node = node.parentElement;
-                 }
-                 if(node && node !== editorEl) {
-                     node.style.direction = dir;
-                     node.style.textAlign = dir === 'rtl' ? 'right' : 'left';
-                 } else {
-                     document.execCommand("formatBlock", false, "div");
-                     setTimeout(() => setDirection(dir), 0);
-                 }
-             }
-             triggerSave();
+            const selection = window.getSelection();
+            if (selection.rangeCount) {
+                let node = selection.anchorNode;
+                while (node && node.nodeName !== 'DIV' && node.nodeName !== 'P' && node !== editorEl) {
+                    node = node.parentElement;
+                }
+                if (node && node !== editorEl) {
+                    node.style.direction = dir;
+                    node.style.textAlign = dir === 'rtl' ? 'right' : 'left';
+                } else {
+                    document.execCommand("formatBlock", false, "div");
+                    setTimeout(() => setDirection(dir), 0);
+                }
+            }
+            triggerSave();
         }
 
         const foreColor = document.getElementById("ntForeColor");
         foreColor.oninput = (e) => document.execCommand("foreColor", false, e.target.value);
-        
+
         const hiliteColor = document.getElementById("ntHiliteColor");
         hiliteColor.oninput = (e) => document.execCommand("hiliteColor", false, e.target.value);
 
         const checklistBtn = document.getElementById("ntChecklistBtn");
-        if(checklistBtn) {
+        if (checklistBtn) {
             checklistBtn.onclick = () => {
                 document.execCommand("insertUnorderedList", false, null);
                 const selection = window.getSelection();
-                if(selection.rangeCount > 0) {
+                if (selection.rangeCount > 0) {
                     let node = selection.anchorNode;
-                    while(node && node !== editorEl) {
-                        if(node.nodeName === 'UL') {
-                            if(node.classList.contains('wb-checklist')) {
+                    while (node && node !== editorEl) {
+                        if (node.nodeName === 'UL') {
+                            if (node.classList.contains('wb-checklist')) {
                                 node.classList.remove('wb-checklist');
                             } else {
                                 node.classList.add('wb-checklist');
@@ -400,12 +400,12 @@
         }
 
         editorEl.addEventListener('click', (e) => {
-            if(e.target.tagName === 'LI') {
+            if (e.target.tagName === 'LI') {
                 const ul = e.target.parentElement;
-                if(ul && ul.classList.contains('wb-checklist')) {
+                if (ul && ul.classList.contains('wb-checklist')) {
                     const rect = e.target.getBoundingClientRect();
                     const x = e.clientX - rect.left;
-                    if(x < 30) { 
+                    if (x < 30) {
                         e.target.classList.toggle('checked');
                         triggerSave();
                     }
@@ -434,12 +434,12 @@
             restoreSelection();
             const selection = window.getSelection();
             if (selection.rangeCount && !selection.isCollapsed) {
-                 document.execCommand('fontSize', false, "7");
-                 const fonts = editorEl.querySelectorAll("font[size='7']");
-                 fonts.forEach(f => {
-                     f.removeAttribute("size");
-                     f.style.fontSize = size;
-                 });
+                document.execCommand('fontSize', false, "7");
+                const fonts = editorEl.querySelectorAll("font[size='7']");
+                fonts.forEach(f => {
+                    f.removeAttribute("size");
+                    f.style.fontSize = size;
+                });
             }
             triggerSaveAndToc();
         };
@@ -465,10 +465,10 @@
         });
 
         pageWrapper.addEventListener("scroll", () => {
-            if(activeImage) updateOverlayPos();
+            if (activeImage) updateOverlayPos();
         });
         window.addEventListener("resize", () => {
-             if(activeImage) updateOverlayPos();
+            if (activeImage) updateOverlayPos();
         });
 
         setupResizer();
@@ -503,7 +503,7 @@
         const imgRect = activeImage.getBoundingClientRect();
         const top = (imgRect.top - wrapperRect.top) + pageWrapper.scrollTop;
         const left = (imgRect.left - wrapperRect.left) + pageWrapper.scrollLeft;
-        
+
         overlayEl.style.top = top + "px";
         overlayEl.style.left = left + "px";
         overlayEl.style.width = imgRect.width + "px";

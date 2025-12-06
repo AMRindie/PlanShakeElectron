@@ -9,7 +9,13 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css" />
+  <script>
+    (function () {
+      const savedTheme = localStorage.getItem('planshake_theme') || 'light';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+    })();
+  </script>
+  <link rel="stylesheet" href="styles/main.css" />
   <link rel="manifest" href="manifest.json">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -19,27 +25,16 @@
 </head>
 
 <body>
-  <!-- Custom Title Bar -->
-  <div id="custom-titlebar" class="titlebar">
-    <div class="titlebar-drag-region"></div>
-    <div class="titlebar-controls">
-      <div class="titlebar-button" id="min-btn" title="Minimize">
-      </div>
-      <div class="titlebar-button" id="max-btn" title="Maximize">
-      </div>
-      <div class="titlebar-button close-btn" id="close-btn" title="Close">
-      </div>
-    </div>
-  </div>
   <header class="app-header">
     <div class="logo">
-      <span class="logo-icon">✨</span> Project Hub
+      <span class="logo-icon">✨</span> <span data-i18n="projectHub">Project Hub</span>
     </div>
     <div class="header-actions">
       <div class="home-actions">
-        <button id="addProjectBtn" class="primary-btn">+ New Project</button>
-        <button id="exportBtn" class="secondary-btn">Export</button>
-        <button id="importAllBtn" class="secondary-btn import-trigger">Import</button>
+        <button id="addProjectBtn" class="primary-btn" data-i18n="createNew">+ Create New</button>
+        <button id="settingsBtn" class="secondary-btn"><span class="setting-icon">⚙️</span></button>
+        <button id="exportBtn" class="secondary-btn" data-i18n="export">Export</button>
+        <button id="importAllBtn" class="secondary-btn import-trigger" data-i18n="import">Import</button>
       </div>
       <div class="theme-switcher hidden">
         <select id="themeSelect">
@@ -54,8 +49,8 @@
   <main class="home-main">
     <section class="home-intro">
       <div class="intro-text">
-        <h1>Your Workspace</h1>
-        <p>
+        <h1 data-i18n="yourWorkspace">Your Workspace</h1>
+        <p data-i18n="workspaceDesc">
           Manage your boards, brainstorm ideas, and track progress in one beautiful place.
         </p>
       </div>
@@ -69,23 +64,23 @@
     <div class="modal-backdrop"></div>
     <div class="modal-content">
       <div class="modal-header">
-        <h3>Project Details</h3>
+        <h3 data-i18n="projectDetails">Project Details</h3>
       </div>
 
       <div class="modal-body">
         <div class="modal-section">
-          <label for="projectEditName">Project Title</label>
+          <label for="projectEditName" data-i18n="projectTitle">Project Title</label>
           <input id="projectEditName" class="modal-title-input" placeholder="e.g. Q4 Marketing Plan" />
         </div>
 
         <div class="modal-section">
-          <label>Icon</label>
+          <label data-i18n="icon">Icon</label>
           <div class="icon-picker project-edit-icons">
             <!-- Icons injected via JS -->
           </div>
         </div>
         <div class="modal-section">
-          <label>Theme Color</label>
+          <label data-i18n="themeColor">Theme Color</label>
           <div class="cover-picker project-edit-covers">
             <div class="cover-swatch cover-blue" data-cover="blue"></div>
             <div class="cover-swatch cover-purple" data-cover="purple"></div>
@@ -102,36 +97,116 @@
         </div>
 
         <div class="modal-section">
-          <label for="projectEditDescription">Description</label>
+          <label for="projectEditDescription" data-i18n="description">Description</label>
           <textarea id="projectEditDescription" rows="3" placeholder="Briefly describe the goals..."></textarea>
         </div>
 
         <div class="modal-section">
-          <label>Status</label>
+          <label data-i18n="status">Status</label>
           <div class="status-options">
-            <button type="button" data-status="active" class="status-pill">Active</button>
-            <button type="button" data-status="todo" class="status-pill">To Do</button>
-            <button type="button" data-status="finished" class="status-pill">Finished</button>
+            <button type="button" data-status="active" class="status-pill" data-i18n="active">Active</button>
+            <button type="button" data-status="todo" class="status-pill" data-i18n="toDo">To Do</button>
+            <button type="button" data-status="finished" class="status-pill" data-i18n="finished">Finished</button>
           </div>
         </div>
 
         <div class="modal-section">
-          <label>Tags</label>
+          <label data-i18n="tags">Tags</label>
           <input id="projectEditTags" type="text" placeholder="design, dev, urgency..." />
-          <small>Comma separated</small>
+          <small data-i18n="commaSeparated">Comma separated</small>
         </div>
       </div>
       <div class="modal-footer">
-        <button id="modalImportBtn" class="secondary-btn import-trigger">Import JSON</button>
+        <button id="modalImportBtn" class="secondary-btn import-trigger" data-i18n="importJSON">Import JSON</button>
         <div class="spacer"></div>
-        <button id="closeProjectEditBtn" class="secondary-btn">Cancel</button>
-        <button id="saveProjectEditBtn" class="primary-btn">Save Changes</button>
+        <button id="closeProjectEditBtn" class="secondary-btn" data-i18n="cancel">Cancel</button>
+        <button id="saveProjectEditBtn" class="primary-btn" data-i18n="saveChanges">Save Changes</button>
       </div>
     </div>
   </div>
 
+  <!-- Settings Modal -->
+  <div id="settingsModal" class="modal hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content" style="max-width: 480px;">
+      <div class="modal-header">
+        <h3>⚙️ <span data-i18n="settings">Settings</span></h3>
+      </div>
+      <div class="modal-body">
+        <div class="modal-section">
+          <label for="languageSelect" data-i18n="language">Language</label>
+          <select id="languageSelect">
+            <option value="en">English</option>
+            <option value="ar">العربية (Arabic)</option>
+          </select>
+        </div>
+        <div class="modal-section">
+          <label for="appThemeSelect" data-i18n="theme">Theme</label>
+          <select id="appThemeSelect">
+            <option value="light">Plan Shake Light</option>
+            <option value="dark">Plan Shake Dark</option>
+          </select>
+        </div>
+        <div class="modal-section">
+          <label data-i18n="cacheManagement">Cache Management</label>
+          <div class="setting-row"
+            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <span data-i18n="enableCaching">Enable Caching</span>
+            <label class="cover-mode-toggle" for="cacheEnabledToggle">
+              <input type="checkbox" id="cacheEnabledToggle" checked>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <div class="setting-row"
+            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <span data-i18n="cacheSize">Cache Size</span>
+            <span id="cacheSizeDisplay" style="font-weight: 600; color: var(--accent-blue);">0 MB</span>
+          </div>
+          <button id="clearCacheBtn" class="secondary-btn full-width">🧹 <span data-i18n="clearCache">Clear
+              Cache</span></button>
+        </div>
+        <div class="modal-section">
+          <label data-i18n="dataManagement">Data Management</label>
+          <button id="clearProjectsBtn" class="danger-btn full-width">🗑️ <span data-i18n="clearAllProjects">Clear All
+              Projects</span></button>
+        </div>
+      </div>
+      <div class="modal-footer" style="flex-direction: column; gap: 12px;">
+        <div style="display: flex; width: 100%; justify-content: flex-end;">
+          <button id="closeSettingsBtn" class="primary-btn" data-i18n="done">Done</button>
+        </div>
+        <div style="text-align: center; width: 100%; font-size: 0.8rem; color: var(--text-secondary);">
+          <span data-i18n="version">Version</span>: <span id="settingsVersionDisplay">v0.0.0</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Clear Projects Confirmation Modal -->
+  <div id="clearConfirmModal" class="modal hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content" style="max-width: 400px;">
+      <div class="modal-header">
+        <h3>⚠️ <span data-i18n="warning">Warning</span></h3>
+      </div>
+      <div class="modal-body">
+        <p style="text-align: center; font-size: 1rem; color: var(--text-secondary);"
+          data-i18n="clearAllProjectsConfirm">
+          Are you sure you want to delete all projects? This action cannot be undone.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button id="cancelClearBtn" class="secondary-btn" data-i18n="cancel">Cancel</button>
+        <button id="confirmClearBtn" class="danger-btn" data-i18n="deleteAll">Delete All</button>
+      </div>
+    </div>
+  </div>
+  <script src="app.storage.js"></script>
   <script src="app.data.js"></script>
+  <script src="app.i18n.js"></script>
   <script src="app.js"></script>
+  <script src="app.colorpicker.js"></script>
+  <script src="app.datepicker.js"></script>
   <script src="app.native.js"></script>
   <script src="app.updater.js"></script>
   <script src="https://bernardo-castilho.github.io/DragDropTouch/DragDropTouch.js"></script>
