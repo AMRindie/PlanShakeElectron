@@ -14,28 +14,28 @@
 
 ---
 
-## ✨ Features
+## Features
 
-### 📋 Project Management
+### Project Management
 - **Kanban Board** — Organize tasks with drag-and-drop lists and cards
 - **Project Status Tracking** — Categorize projects as Active, To Do, or Finished
 - **Custom Project Covers** — Personalize projects with colors or images
 - **Tags & Labels** — Add color-coded labels to organize cards
 - **Card Checklists** — Break down tasks into actionable items with progress tracking
 
-### 📅 Timeline & Calendar
+### Timeline & Calendar
 - **Gantt Chart View** — Visualize project timelines with milestone bars
 - **Calendar View** — See milestones and deadlines in a familiar calendar format
 - **Today Marker** — Always know where you are in the timeline
 - **Zoom Controls** — Adjust the timeline view from days to weeks
 
-### 🎯 Milestones & Planning
+### Milestones & Planning
 - **Milestone Panel** — Create and manage project milestones
 - **Priority Levels** — Set High, Medium, or Low priority for each milestone
 - **Date Ranges** — Define start and end dates for milestones
 - **Quick Add** — Fast milestone creation with keyboard shortcuts
 
-### 📝 Notes
+### Notes
 - **Rich Text Editor** — Full formatting with bold, italic, underline, strikethrough
 - **Headers & Styling** — Create structured notes with H1, H2, H3 headings
 - **Table of Contents** — Auto-generated navigation from your headers
@@ -43,7 +43,7 @@
 - **Checklists** — Create interactive to-do lists within notes
 - **Text Direction** — Support for left-to-right and right-to-left text
 
-### 🎨 Whiteboard
+### Whiteboard
 - **Freehand Drawing** — Sketch ideas with customizable pen tools
 - **Shape Tools** — Add rectangles, circles, and other shapes
 - **Layer Management** — Organize drawings with multiple layers

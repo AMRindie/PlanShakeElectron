@@ -375,6 +375,9 @@
     margin-top: 2px;
     cursor: pointer;
     accent-color: var(--accent-blue);
+    position: relative;
+    z-index: 100;
+    pointer-events: auto;
 }
 
 .card-completed {

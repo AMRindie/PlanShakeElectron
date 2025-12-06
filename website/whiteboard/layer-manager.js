@@ -106,7 +106,7 @@ class LayerManager {
             deleteBtn.title = 'Delete Layer';
             deleteBtn.onclick = async (e) => {
                 e.stopPropagation();
-                if (await customConfirm(`Delete layer "${layer.name}"?\n\nAll items and strokes on this layer will be permanently removed.`, { title: "Delete Layer", confirmText: "Delete", danger: true })) {
+                if (await customConfirm(t('deleteLayerConfirm'), { title: t('deleteLayer'), confirmText: t('delete'), danger: true })) {
                     this.stateManager.deleteLayer(layer.id);
 
                     // If we deleted the active layer, switch to first layer
@@ -164,7 +164,7 @@ class LayerManager {
      * Clear active layer
      */
     async clearActiveLayer() {
-        if (await customConfirm('Clear active layer?', { title: "Clear Layer", confirmText: "Clear", danger: true })) {
+        if (await customConfirm(t('clearLayerConfirm'), { title: t('clearLayer'), confirmText: t('clear'), danger: true })) {
             this.stateManager.recordHistory();
             this.stateManager.clearLayer(this.activeLayerId);
             this.callbacks.onLayerChange();

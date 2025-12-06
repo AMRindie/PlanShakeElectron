@@ -1,6 +1,6 @@
 {
     "name": "planshake",
-    "version": "0.2.0",
+    "version": "0.2.1",
     "description": "PlanShake - Project Management Application",
     "main": "main.js",
     "scripts": {

@@ -48,7 +48,7 @@ class WhiteboardEngine {
         this.stateManager = new StateManager(this.projectData);
         this.stateManager.onSave((data) => {
             if (window.saveData && window.currentData) {
-                window.saveData(data);
+                window.saveData(window.currentData);
             }
         });
 

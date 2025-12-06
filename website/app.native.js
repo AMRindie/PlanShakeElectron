@@ -107,8 +107,8 @@
     if (clearProjectsBtn) {
       clearProjectsBtn.addEventListener('click', async () => {
         const confirmed = await window.customConfirm(
-          "This will permanently delete ALL your projects and data. This action cannot be undone!",
-          { title: "⚠️ Clear All Projects", confirmText: "Delete All", danger: true }
+          t('clearAllProjectsConfirm'),
+          { title: "⚠️ " + t('clearAllProjects'), confirmText: t('deleteAll'), danger: true }
         );
 
         if (confirmed) {

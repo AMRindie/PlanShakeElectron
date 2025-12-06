@@ -15,13 +15,13 @@ const CustomDialog = {
 
     show(options) {
         this.init();
-        const { title, message, type = 'confirm', confirmText = 'Confirm', cancelText = 'Cancel', danger = false } = options;
+        const { title, message, type = 'confirm', confirmText = t('confirm'), cancelText = t('cancel'), danger = false } = options;
 
         return new Promise((resolve) => {
             this.overlay.innerHTML = `
                 <div class="custom-dialog">
                     <div class="custom-dialog-header">
-                        <h3>${title || (type === 'alert' ? 'Notice' : 'Confirm')}</h3>
+                        <h3>${title || (type === 'alert' ? t('warning') : t('confirm'))}</h3>
                     </div>
                     <div class="custom-dialog-body">
                         <p>${message}</p>
@@ -1153,7 +1153,7 @@ async function initProjectPage() {
             el.innerHTML = `
             <div class="list-header"><input class="list-title-input" value="${list.title}" /><button class="icon-btn delete-list-btn">×</button></div>
             <div class="list-cards" data-list-id="${list.id}"></div>
-            <div class="add-card"><button class="text-btn">+ Add a card</button></div>
+            <div class="add-card"><button class="text-btn">${t('addACard')}</button></div>
           `;
 
             // 2. Wire List Header Actions
@@ -1642,6 +1642,9 @@ async function initProjectPage() {
             if (coverPositionSelect) coverPositionSelect.value = card.cover.position || "center";
         };
 
+        // Call immediately to set initial cover controls state
+        syncCoverControls();
+
         if (coverColorModeBtn) {
             coverColorModeBtn.onclick = () => {
                 card.cover.type = "color";
@@ -1809,7 +1812,9 @@ async function initProjectPage() {
                     if (ul) {
                         const rect = target.getBoundingClientRect();
                         const x = e.clientX - rect.left;
-                        if (x < 30) { // Click on checkbox area (left side)
+                        // Click on checkbox area (left side - expanded to 50px for easier clicking)
+                        // Or if clicking on the ::before pseudo-element area
+                        if (x < 50) {
                             e.preventDefault();
                             e.stopPropagation();
                             target.classList.toggle('checked');
@@ -1902,13 +1907,7 @@ async function initProjectPage() {
         }
 
         // Call initial renders
-        renderChecklist();
         renderLabels();
-
-        // Real-time saving for textareas/inputs other than title
-        descIn.oninput = () => { card.description = descIn.value; saveDataDebounced(window.currentData); };
-        dueIn.onchange = saveCardData;
-        if (durationIn) durationIn.onchange = saveCardData;
     };
 
     // INIT WHITEBOARD

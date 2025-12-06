@@ -984,6 +984,59 @@
     background: transparent;
 }
 
+[data-theme="dark"] .label-row .card-label {
+    color: #e0e0e0;
+}
+
+[data-theme="dark"] .label-row .label-remove-btn {
+    color: #a0a0a0;
+}
+
+[data-theme="dark"] .label-row .label-remove-btn:hover {
+    color: #ef4444;
+}
+
+/* Modal Section Titles - Dark Mode */
+[data-theme="dark"] .modal-section h4,
+[data-theme="dark"] .modal-section-title,
+[data-theme="dark"] .modal-body h4 {
+    color: #e0e0e0;
+}
+
+/* Modal Title Inputs - Dark Mode (transparent bg inputs) */
+[data-theme="dark"] #cardTitleInput,
+[data-theme="dark"] .modal-title-input {
+    color: #e0e0e0;
+}
+
+[data-theme="dark"] #cardTitleInput::placeholder,
+[data-theme="dark"] .modal-title-input::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+/* New Card Input - Dark Mode (extended) */
+[data-theme="dark"] .new-card-input {
+    background: rgba(0, 0, 0, 0.3);
+    color: #e0e0e0;
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .new-card-input::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+[data-theme="dark"] .new-card-input:focus {
+    background: rgba(0, 0, 0, 0.4);
+    border-color: var(--accent-blue);
+}
+
+/* Card Labels (on board cards) - Dark Mode */
+[data-theme="dark"] .card-label {
+    color: #e0e0e0;
+    background: rgba(100, 100, 140, 0.3);
+    border-color: rgba(150, 150, 180, 0.5);
+}
+
 /* Project Header Stats - Dark Mode */
 [data-theme="dark"] .project-header {
     color: #e0e0e0;
