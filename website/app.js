@@ -158,6 +158,119 @@ let lastSaveTimestamp = null;
 let lastSavedEventHandler = null;
 
 // ======================
+// DRAG ENHANCEMENT STATE
+// ======================
+// Undo stack for card moves (stores last N moves)
+const cardMoveUndoStack = [];
+const MAX_UNDO_STACK = 20;
+
+// Undo stack for card delete/archive actions
+const cardActionUndoStack = [];
+
+// Multi-select state
+let selectedCardIds = new Set();
+
+// Auto-scroll state
+let autoScrollInterval = null;
+const AUTO_SCROLL_SPEED = 8;
+const AUTO_SCROLL_THRESHOLD = 80; // pixels from edge to trigger
+
+// List hint tooltip
+let listHintElement = null;
+
+// Helper: Create list hint tooltip
+function showListHint(listTitle, x, y) {
+    if (!listHintElement) {
+        listHintElement = document.createElement('div');
+        listHintElement.className = 'drag-list-hint';
+        document.body.appendChild(listHintElement);
+    }
+    listHintElement.textContent = `→ ${listTitle}`;
+
+    // Smart positioning: check if there's more space on left or right
+    const viewportWidth = window.innerWidth;
+    const hintWidth = 120; // Approximate tooltip width
+
+    // Position closer to cursor for less floaty feel
+    if (x > viewportWidth - hintWidth - 30) {
+        // Position on left side of cursor
+        listHintElement.style.left = (x - hintWidth - 10) + 'px';
+    } else {
+        // Position on right side of cursor
+        listHintElement.style.left = (x + 10) + 'px';
+    }
+    listHintElement.style.top = (y - 8) + 'px';
+    listHintElement.classList.add('visible');
+}
+
+function hideListHint() {
+    if (listHintElement) {
+        listHintElement.classList.remove('visible');
+    }
+}
+
+// Helper: Start auto-scroll for lists
+function startAutoScroll(container, direction) {
+    if (autoScrollInterval) return;
+    autoScrollInterval = setInterval(() => {
+        if (direction === 'up') container.scrollTop -= AUTO_SCROLL_SPEED;
+        else if (direction === 'down') container.scrollTop += AUTO_SCROLL_SPEED;
+        else if (direction === 'left') container.scrollLeft -= AUTO_SCROLL_SPEED;
+        else if (direction === 'right') container.scrollLeft += AUTO_SCROLL_SPEED;
+    }, 16);
+}
+
+function stopAutoScroll() {
+    if (autoScrollInterval) {
+        clearInterval(autoScrollInterval);
+        autoScrollInterval = null;
+    }
+}
+
+// Helper: Undo last card move
+async function undoLastCardMove() {
+    if (cardMoveUndoStack.length === 0) return false;
+
+    const lastMove = cardMoveUndoStack.pop();
+    const { cardId, fromListId, toListId, fromIndex, toIndex } = lastMove;
+
+    const project = window.currentProject;
+    if (!project) return false;
+
+    const fromList = project.lists.find(l => l.id === fromListId);
+    const toList = project.lists.find(l => l.id === toListId);
+    if (!fromList || !toList) return false;
+
+    // Find card in current location (toList)
+    const cardIdx = toList.cards.findIndex(c => c.id === cardId);
+    if (cardIdx === -1) return false;
+
+    const [card] = toList.cards.splice(cardIdx, 1);
+
+    // Put back in original position
+    fromList.cards.splice(fromIndex, 0, card);
+
+    await saveData(window.currentData);
+
+    // Fire custom event for UI update
+    window.dispatchEvent(new CustomEvent('cardMoveUndo', { detail: lastMove }));
+
+    return true;
+}
+
+// Expose undo function globally
+window.undoLastCardMove = undoLastCardMove;
+
+// Helper: Haptic feedback
+function triggerHaptic(type = 'light') {
+    if ('vibrate' in navigator) {
+        if (type === 'light') navigator.vibrate(10);
+        else if (type === 'medium') navigator.vibrate(25);
+        else if (type === 'heavy') navigator.vibrate([30, 10, 30]);
+    }
+}
+
+// ======================
 // TOUCH DRAG SUPPORT
 // ======================
 // This enables Drag & Drop on Touch Devices for Kanban Board
@@ -239,19 +352,21 @@ let lastSavedEventHandler = null;
             touchGhost = touchDragSrc.cloneNode(true);
             touchGhost.style.position = "fixed";
             touchGhost.style.width = touchDragSrc.offsetWidth + "px";
-            touchGhost.style.opacity = "0.9";
+            touchGhost.style.opacity = "0.95";
             touchGhost.style.pointerEvents = "none";
             touchGhost.style.zIndex = "9999";
-            touchGhost.style.transform = "rotate(3deg) scale(1.05)";
-            touchGhost.style.boxShadow = "0 8px 24px rgba(0,0,0,0.15)";
-            touchGhost.style.transition = "transform 0.1s ease-out";
+            touchGhost.style.transform = "rotate(4deg) scale(1.02)";
+            touchGhost.style.boxShadow = "0 15px 35px rgba(0,0,0,0.2)";
+            touchGhost.style.transition = "transform 0.08s ease-out, box-shadow 0.08s ease-out";
+            touchGhost.style.borderRadius = "16px";
             document.body.appendChild(touchGhost);
-            touchDragSrc.style.opacity = "0.5"; // Dim original
+            // Hide the original element completely - no ghost!
+            touchDragSrc.classList.add('card-dragging-source');
         }
 
-        // Move Ghost
-        touchGhost.style.left = (touch.clientX - 20) + "px";
-        touchGhost.style.top = (touch.clientY - 20) + "px";
+        // Move Ghost - center it under the finger for better feel
+        touchGhost.style.left = (touch.clientX - touchDragSrc.offsetWidth / 2) + "px";
+        touchGhost.style.top = (touch.clientY - 25) + "px";
 
         // Find element below finger
         const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
@@ -280,7 +395,8 @@ let lastSavedEventHandler = null;
             touchGhost.remove();
             touchGhost = null;
         }
-        touchDragSrc.style.opacity = "1";
+        // Restore the original element
+        touchDragSrc.classList.remove('card-dragging-source');
 
         // Find drop target based on last known position
         const touch = e.changedTouches[0];
@@ -645,8 +761,32 @@ async function initHomePage() {
                         renderProjectsByStatus();
                     }
                 };
-                card.addEventListener("dragstart", (e) => { draggedProjectId = proj.id; e.dataTransfer.effectAllowed = "move"; e.dataTransfer.setData("text/plain", proj.id); setTimeout(() => card.style.opacity = "0.5", 0); });
-                card.addEventListener("dragend", () => { draggedProjectId = null; card.style.opacity = "1"; if (projectPlaceholder?.parentNode) projectPlaceholder.remove(); projectPlaceholder = null; });
+                card.addEventListener("dragstart", (e) => {
+                    draggedProjectId = proj.id;
+                    e.dataTransfer.effectAllowed = "move";
+                    e.dataTransfer.setData("text/plain", proj.id);
+
+                    // Create custom drag image
+                    const dragImage = card.cloneNode(true);
+                    dragImage.style.position = 'absolute';
+                    dragImage.style.top = '-9999px';
+                    dragImage.style.left = '-9999px';
+                    dragImage.style.width = card.offsetWidth + 'px';
+                    dragImage.style.transform = 'rotate(4deg) scale(1.02)';
+                    dragImage.style.boxShadow = '0 15px 35px rgba(0,0,0,0.2)';
+                    dragImage.style.opacity = '0.95';
+                    document.body.appendChild(dragImage);
+                    e.dataTransfer.setDragImage(dragImage, card.offsetWidth / 2, 20);
+                    setTimeout(() => dragImage.remove(), 0);
+
+                    setTimeout(() => card.classList.add('project-card-dragging-source'), 0);
+                });
+                card.addEventListener("dragend", () => {
+                    draggedProjectId = null;
+                    card.classList.remove('project-card-dragging-source');
+                    if (projectPlaceholder?.parentNode) projectPlaceholder.remove();
+                    projectPlaceholder = null;
+                });
                 listContainer.appendChild(card);
             });
             body.appendChild(listContainer); section.appendChild(header); section.appendChild(body);
@@ -1239,48 +1379,81 @@ async function initProjectPage() {
 
             cardCont.addEventListener("dragover", (e) => {
                 e.preventDefault();
-                // console.log("Drag Over"); // Commented out to avoid spam, uncomment if needed
                 if (!window.draggedCardInfo) return;
 
                 if (!window.cardPlaceholder) {
-                    // Placeholder might not be created yet if dragstart setTimeout hasn't fired
                     return;
                 }
+
+                // Auto-scroll: check if near edges
+                const contRect = cardCont.getBoundingClientRect();
+                const boardEl = document.querySelector('.board');
+
+                // Vertical auto-scroll within list
+                if (e.clientY < contRect.top + AUTO_SCROLL_THRESHOLD) {
+                    startAutoScroll(cardCont, 'up');
+                } else if (e.clientY > contRect.bottom - AUTO_SCROLL_THRESHOLD) {
+                    startAutoScroll(cardCont, 'down');
+                } else {
+                    stopAutoScroll();
+                }
+
+                // Horizontal auto-scroll for board
+                if (boardEl) {
+                    const boardRect = boardEl.getBoundingClientRect();
+                    if (e.clientX < boardRect.left + AUTO_SCROLL_THRESHOLD) {
+                        startAutoScroll(boardEl, 'left');
+                    } else if (e.clientX > boardRect.right - AUTO_SCROLL_THRESHOLD) {
+                        startAutoScroll(boardEl, 'right');
+                    }
+                }
+
+                // Show list hint tooltip
+                const listTitle = list.title || 'List';
+                showListHint(listTitle, e.clientX, e.clientY);
 
                 const targetCard = e.target.closest(".card");
 
                 // Case 1: Dragging over an existing card
-                if (targetCard) {
+                if (targetCard && !targetCard.classList.contains('card-dragging-source')) {
                     const rect = targetCard.getBoundingClientRect();
-                    // Check if cursor is in the upper half of the card
                     if (e.clientY < rect.top + rect.height / 2) {
                         cardCont.insertBefore(window.cardPlaceholder, targetCard);
                     } else {
                         cardCont.insertBefore(window.cardPlaceholder, targetCard.nextSibling);
                     }
-                    // Case 2: Dragging over an empty area of the list or below the last card
                 } else if (!cardCont.querySelector(".card-placeholder")) {
                     cardCont.appendChild(window.cardPlaceholder);
                 }
 
                 el.classList.add("drag-over");
+
+                // Store placeholder's current list for forgiving drop
+                window.cardPlaceholder.dataset.targetListId = list.id;
             });
 
             cardCont.addEventListener("dragleave", (e) => {
-                if (!cardCont.contains(e.relatedTarget)) el.classList.remove("drag-over");
+                if (!cardCont.contains(e.relatedTarget)) {
+                    el.classList.remove("drag-over");
+                }
             });
 
             cardCont.addEventListener("drop", async (e) => {
                 e.preventDefault();
                 console.log("Drop Event Fired");
                 el.classList.remove("drag-over");
+                stopAutoScroll();
+                hideListHint();
 
                 if (!window.draggedCardInfo || !window.cardPlaceholder || !window.cardPlaceholder.parentNode) {
                     console.warn("Drop aborted: Missing info", { info: window.draggedCardInfo, placeholder: window.cardPlaceholder });
                     return;
                 }
 
-                const targetListId = cardCont.dataset.listId;
+                // FORGIVING DROP: Use the list where placeholder is, not where drop event fired
+                const placeholderParent = window.cardPlaceholder.closest('.list-cards');
+                const targetListId = placeholderParent ? placeholderParent.dataset.listId : cardCont.dataset.listId;
+
                 const sourceList = currentProject.lists.find(l => l.id === window.draggedCardInfo.fromListId);
                 const targetList = currentProject.lists.find(l => l.id === targetListId);
 
@@ -1295,22 +1468,45 @@ async function initProjectPage() {
                     console.error("Drop failed: Card not found in source list");
                     return;
                 }
+
+                // 2. Save to undo stack BEFORE making changes
+                const undoEntry = {
+                    cardId: window.draggedCardInfo.cardId,
+                    fromListId: sourceList.id,
+                    toListId: targetList.id,
+                    fromIndex: cardIdx,
+                    toIndex: null // will be set after insertion
+                };
+
                 const [card] = sourceList.cards.splice(cardIdx, 1);
 
-                // 2. Determine the Insertion Index based on the placeholder position
-                const children = Array.from(cardCont.children);
+                // 3. Determine the Insertion Index based on the placeholder position
+                // Use placeholder's parent list, not the drop target
+                const placeholderListCards = placeholderParent || cardCont;
+                const children = Array.from(placeholderListCards.children).filter(c =>
+                    c.classList.contains('card') || c.classList.contains('card-placeholder')
+                );
                 let newIndex = children.indexOf(window.cardPlaceholder);
 
-                // Fix: If dropping into the same list and dropping 'after' the original card,
-                // the index needs adjustment because the card was removed from the source array.
+                // Fix same-list adjustment
                 if (sourceList.id === targetList.id && newIndex > cardIdx) {
                     newIndex--;
                 }
 
-                // 3. Insert the Card into the target list array
+                // 4. Insert the Card into the target list array
                 targetList.cards.splice(newIndex, 0, card);
+                undoEntry.toIndex = newIndex;
 
-                // 4. Clean up placeholder and re-render
+                // 5. Push to undo stack
+                cardMoveUndoStack.push(undoEntry);
+                if (cardMoveUndoStack.length > MAX_UNDO_STACK) {
+                    cardMoveUndoStack.shift();
+                }
+
+                // 6. Haptic feedback
+                triggerHaptic('medium');
+
+                // 7. Clean up placeholder and re-render
                 window.cardPlaceholder.remove();
                 window.cardPlaceholder = null;
 
@@ -1412,20 +1608,38 @@ async function initProjectPage() {
                 // Card Drag Start (Initial Setup)
                 cEl.addEventListener("dragstart", e => {
                     console.log("Drag Start:", card.id);
-                    window.draggedCardInfo = { cardId: card.id, fromListId: list.id };
+                    window.draggedCardInfo = { cardId: card.id, fromListId: list.id, element: cEl };
                     e.dataTransfer.setData("text/plain", card.id);
                     e.dataTransfer.effectAllowed = "move";
 
+                    // Create custom drag image (clone of the card)
+                    const dragImage = cEl.cloneNode(true);
+                    dragImage.style.position = 'absolute';
+                    dragImage.style.top = '-9999px';
+                    dragImage.style.left = '-9999px';
+                    dragImage.style.width = cEl.offsetWidth + 'px';
+                    dragImage.style.transform = 'rotate(4deg) scale(1.02)';
+                    dragImage.style.boxShadow = '0 15px 35px rgba(0,0,0,0.2)';
+                    dragImage.style.opacity = '0.95';
+                    dragImage.style.pointerEvents = 'none';
+                    dragImage.style.zIndex = '9999';
+                    document.body.appendChild(dragImage);
+                    e.dataTransfer.setDragImage(dragImage, cEl.offsetWidth / 2, 20);
+
+                    // Clean up the drag image after a short delay
+                    setTimeout(() => dragImage.remove(), 0);
+
                     // Defer DOM manipulation to avoid breaking drag initialization
                     setTimeout(() => {
-                        cEl.style.opacity = "0.5";
+                        // Hide the original card completely - no ghost!
+                        cEl.classList.add('card-dragging-source');
 
-                        // Create and insert the placeholder ghost where the card currently sits
+                        // Create and insert the placeholder where the card currently sits
                         if (!window.cardPlaceholder) {
                             window.cardPlaceholder = document.createElement("div");
                             window.cardPlaceholder.className = "card-placeholder";
-                            window.cardPlaceholder.style.height = cEl.offsetHeight + "px";
                         }
+                        window.cardPlaceholder.style.height = cEl.offsetHeight + "px";
                         if (cEl.parentNode) {
                             cEl.parentNode.insertBefore(window.cardPlaceholder, cEl);
                         }
@@ -1435,10 +1649,16 @@ async function initProjectPage() {
                 // Card Drag End (Cleanup)
                 cEl.addEventListener("dragend", () => {
                     console.log("Drag End");
-                    cEl.style.opacity = "1";
+                    // Restore visibility of the dragged card
+                    cEl.classList.remove('card-dragging-source');
                     window.draggedCardInfo = null;
                     if (window.cardPlaceholder?.parentNode) window.cardPlaceholder.remove();
                     window.cardPlaceholder = null;
+
+                    // Clean up any lingering drag-over states and enhancements
+                    document.querySelectorAll('.list.drag-over').forEach(el => el.classList.remove('drag-over'));
+                    stopAutoScroll();
+                    hideListHint();
                 });
 
                 cardCont.appendChild(cEl);
@@ -1512,6 +1732,11 @@ async function initProjectPage() {
             const targetId = button.dataset.viewTarget;
             document.getElementById(targetId).classList.remove("hidden");
 
+            // Hide all undo toasts when switching views
+            document.querySelectorAll('.undo-toast').forEach(toast => {
+                toast.classList.remove('visible');
+            });
+
             // Hide whiteboard context menu when switching views
             const wbContextMenu = document.getElementById('wbContextMenu');
             if (wbContextMenu) wbContextMenu.classList.add('hidden');
@@ -1533,6 +1758,165 @@ async function initProjectPage() {
 
     renderBoard();
     setupPlannerPanel();
+
+    // ======================
+    // UNDO KEYBOARD SHORTCUT (Ctrl+Z)
+    // ======================
+    let undoToastElement = null;
+    let undoToastTimeout = null;
+    let cardRedoStack = []; // Track redo capability for card moves
+
+    function showUndoToast(message, isUndo = true) {
+        if (!undoToastElement) {
+            undoToastElement = document.createElement('div');
+            undoToastElement.className = 'undo-toast';
+            document.body.appendChild(undoToastElement);
+        }
+
+        // Use translations if available
+        const displayMessage = message;
+        const oppositeAction = isUndo ? (t('redo') || 'Redo') : (t('undo') || 'Undo');
+
+        undoToastElement.innerHTML = `
+            <span>${displayMessage}</span>
+            <button class="toast-action-btn">${oppositeAction}</button>
+        `;
+
+        // Wire up the button
+        const btn = undoToastElement.querySelector('.toast-action-btn');
+        btn.onclick = async () => {
+            if (isUndo && cardRedoStack.length > 0) {
+                // Redo: move card from fromList (where it is now after undo) to toList (original target)
+                const redoInfo = cardRedoStack.pop();
+                if (redoInfo) {
+                    // After undo: card is now in fromListId at fromIndex
+                    // To redo: move it back to toListId at toIndex
+                    const sourceList = currentProject.lists.find(l => l.id === redoInfo.fromListId);
+                    const targetList = currentProject.lists.find(l => l.id === redoInfo.toListId);
+                    if (sourceList && targetList) {
+                        const cardIndex = sourceList.cards.findIndex(c => c.id === redoInfo.cardId);
+                        if (cardIndex > -1) {
+                            const [card] = sourceList.cards.splice(cardIndex, 1);
+                            targetList.cards.splice(redoInfo.toIndex, 0, card);
+                            renderBoard();
+                            saveDataDebounced(window.currentData);
+                            showUndoToast(t('actionRestored') || 'Action restored', false);
+                        }
+                    }
+                }
+            } else if (!isUndo && cardMoveUndoStack.length > 0) {
+                // Undo again
+                const success = await undoLastCardMove();
+                if (success) {
+                    renderBoard();
+                    showUndoToast(t('cardMoveUndone') || 'Card move undone', true);
+                }
+            }
+        };
+
+        undoToastElement.classList.add('visible');
+
+        // Auto-hide after 4 seconds
+        clearTimeout(undoToastTimeout);
+        undoToastTimeout = setTimeout(() => {
+            undoToastElement.classList.remove('visible');
+        }, 4000);
+    }
+
+    function hideUndoToast() {
+        if (undoToastElement) {
+            undoToastElement.classList.remove('visible');
+        }
+    }
+
+    // Toast for card archive/delete actions with undo
+    let cardActionToastElement = null;
+    let cardActionToastTimeout = null;
+
+    function showCardActionToast(message, actionType) {
+        if (!cardActionToastElement) {
+            cardActionToastElement = document.createElement('div');
+            cardActionToastElement.className = 'undo-toast card-action-toast';
+            document.body.appendChild(cardActionToastElement);
+        }
+
+        const undoLabel = t('undo') || 'Undo';
+
+        cardActionToastElement.innerHTML = `
+            <span>${message}</span>
+            <button class="toast-action-btn">${undoLabel}</button>
+        `;
+
+        // Wire up the undo button
+        const btn = cardActionToastElement.querySelector('.toast-action-btn');
+        btn.onclick = () => {
+            if (cardActionUndoStack.length > 0) {
+                const lastAction = cardActionUndoStack.pop();
+                const targetList = currentProject.lists.find(l => l.id === lastAction.listId);
+
+                if (targetList) {
+                    // Restore the card to its original position
+                    targetList.cards.splice(lastAction.index, 0, lastAction.card);
+
+                    // If it was an archive, remove from archive
+                    if (lastAction.type === 'archive' && currentProject.archive) {
+                        currentProject.archive.cards = currentProject.archive.cards.filter(
+                            c => c.id !== lastAction.card.id
+                        );
+                    }
+
+                    saveData(window.currentData);
+                    renderBoard();
+
+                    // Show restored message
+                    cardActionToastElement.innerHTML = `<span>${t('actionRestored') || 'Restored'}</span>`;
+                    setTimeout(() => {
+                        cardActionToastElement.classList.remove('visible');
+                    }, 1500);
+                    return;
+                }
+            }
+            cardActionToastElement.classList.remove('visible');
+        };
+
+        cardActionToastElement.classList.add('visible');
+
+        clearTimeout(cardActionToastTimeout);
+        cardActionToastTimeout = setTimeout(() => {
+            cardActionToastElement.classList.remove('visible');
+        }, 5000); // Give user more time for important actions
+    }
+
+    // Keyboard shortcut: Ctrl+Z to undo last card move
+    document.addEventListener('keydown', async (e) => {
+        // Only handle Ctrl+Z (not in input fields)
+        if (e.ctrlKey && e.key === 'z' && !e.target.matches('input, textarea, [contenteditable]')) {
+            // Check if there's something to undo
+            if (cardMoveUndoStack.length > 0) {
+                e.preventDefault();
+                // Save redo info before undoing
+                const undoInfo = cardMoveUndoStack[cardMoveUndoStack.length - 1];
+                if (undoInfo) {
+                    cardRedoStack.push({
+                        cardId: undoInfo.cardId,
+                        fromListId: undoInfo.fromListId,
+                        toListId: undoInfo.toListId,
+                        toIndex: undoInfo.toIndex
+                    });
+                }
+                const success = await undoLastCardMove();
+                if (success) {
+                    renderBoard();
+                    showUndoToast(t('cardMoveUndone') || 'Card move undone', true);
+                }
+            }
+        }
+    });
+
+    // Listen for undo events (triggered by undoLastCardMove)
+    window.addEventListener('cardMoveUndo', () => {
+        renderBoard();
+    });
 
     // Notes
     const notes = document.getElementById("notesEditor");
@@ -1879,6 +2263,10 @@ async function initProjectPage() {
             archiveCardBtn.onclick = async () => {
                 if (!window.currentProject.archive) window.currentProject.archive = { cards: [], lists: [] };
                 if (await customConfirm(t('archiveCardConfirm'), { title: t('archive'), confirmText: t('archive') })) {
+                    // Store card info for undo
+                    const cardIndex = list.cards.findIndex(c => c.id === card.id);
+                    const cardCopy = JSON.parse(JSON.stringify(card));
+
                     // Remove from its list
                     list.cards = list.cards.filter(c => c.id !== card.id);
                     // Push into archive with list reference
@@ -1886,9 +2274,24 @@ async function initProjectPage() {
                         ...card,
                         listId: list.id
                     });
+
+                    // Push to undo stack
+                    cardActionUndoStack.push({
+                        type: 'archive',
+                        card: cardCopy,
+                        listId: list.id,
+                        index: cardIndex
+                    });
+                    if (cardActionUndoStack.length > MAX_UNDO_STACK) {
+                        cardActionUndoStack.shift();
+                    }
+
                     saveData(window.currentData);
                     modal.classList.add("hidden");
                     renderBoard();
+
+                    // Show undo toast
+                    showCardActionToast(t('archived') || 'Card archived', 'archive');
                 }
             };
         }
@@ -1897,11 +2300,30 @@ async function initProjectPage() {
         if (permanentDeleteCardBtn) {
             permanentDeleteCardBtn.onclick = async () => {
                 if (await customConfirm(t('deleteCardConfirm'), { title: t('delete'), confirmText: t('delete'), danger: true })) {
+                    // Store card info for undo
+                    const cardIndex = list.cards.findIndex(c => c.id === card.id);
+                    const cardCopy = JSON.parse(JSON.stringify(card));
+
                     // Remove from its list
                     list.cards = list.cards.filter(c => c.id !== card.id);
+
+                    // Push to undo stack
+                    cardActionUndoStack.push({
+                        type: 'delete',
+                        card: cardCopy,
+                        listId: list.id,
+                        index: cardIndex
+                    });
+                    if (cardActionUndoStack.length > MAX_UNDO_STACK) {
+                        cardActionUndoStack.shift();
+                    }
+
                     saveData(window.currentData);
                     modal.classList.add("hidden");
                     renderBoard();
+
+                    // Show undo toast
+                    showCardActionToast(t('delete') || 'Card deleted', 'delete');
                 }
             };
         }
