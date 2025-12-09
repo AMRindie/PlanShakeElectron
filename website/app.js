@@ -160,12 +160,7 @@ let lastSavedEventHandler = null;
 // ======================
 // DRAG ENHANCEMENT STATE
 // ======================
-// Undo stack for card moves (stores last N moves)
-const cardMoveUndoStack = [];
-const MAX_UNDO_STACK = 20;
-
-// Undo stack for card delete/archive actions
-const cardActionUndoStack = [];
+// Undo management is now handled by UndoManager (app.undo.js)
 
 // Multi-select state
 let selectedCardIds = new Set();
@@ -1497,11 +1492,8 @@ async function initProjectPage() {
                 targetList.cards.splice(newIndex, 0, card);
                 undoEntry.toIndex = newIndex;
 
-                // 5. Push to undo stack
-                cardMoveUndoStack.push(undoEntry);
-                if (cardMoveUndoStack.length > MAX_UNDO_STACK) {
-                    cardMoveUndoStack.shift();
-                }
+                // 5. Push to undo stack via UndoManager
+                UndoManager.pushCardMove(undoEntry);
 
                 // 6. Haptic feedback
                 triggerHaptic('medium');
@@ -1756,158 +1748,30 @@ async function initProjectPage() {
         });
     }
 
+    // Expose renderBoard on window for UndoManager
+    window.renderBoard = renderBoard;
+
     renderBoard();
     setupPlannerPanel();
 
     // ======================
-    // UNDO KEYBOARD SHORTCUT (Ctrl+Z)
+    // UNDO KEYBOARD SHORTCUT (Ctrl+Z) - Uses UndoManager
     // ======================
-    let undoToastElement = null;
-    let undoToastTimeout = null;
-    let cardRedoStack = []; // Track redo capability for card moves
-
-    function showUndoToast(message, isUndo = true) {
-        if (!undoToastElement) {
-            undoToastElement = document.createElement('div');
-            undoToastElement.className = 'undo-toast';
-            document.body.appendChild(undoToastElement);
-        }
-
-        // Use translations if available
-        const displayMessage = message;
-        const oppositeAction = isUndo ? (t('redo') || 'Redo') : (t('undo') || 'Undo');
-
-        undoToastElement.innerHTML = `
-            <span>${displayMessage}</span>
-            <button class="toast-action-btn">${oppositeAction}</button>
-        `;
-
-        // Wire up the button
-        const btn = undoToastElement.querySelector('.toast-action-btn');
-        btn.onclick = async () => {
-            if (isUndo && cardRedoStack.length > 0) {
-                // Redo: move card from fromList (where it is now after undo) to toList (original target)
-                const redoInfo = cardRedoStack.pop();
-                if (redoInfo) {
-                    // After undo: card is now in fromListId at fromIndex
-                    // To redo: move it back to toListId at toIndex
-                    const sourceList = currentProject.lists.find(l => l.id === redoInfo.fromListId);
-                    const targetList = currentProject.lists.find(l => l.id === redoInfo.toListId);
-                    if (sourceList && targetList) {
-                        const cardIndex = sourceList.cards.findIndex(c => c.id === redoInfo.cardId);
-                        if (cardIndex > -1) {
-                            const [card] = sourceList.cards.splice(cardIndex, 1);
-                            targetList.cards.splice(redoInfo.toIndex, 0, card);
-                            renderBoard();
-                            saveDataDebounced(window.currentData);
-                            showUndoToast(t('actionRestored') || 'Action restored', false);
-                        }
-                    }
-                }
-            } else if (!isUndo && cardMoveUndoStack.length > 0) {
-                // Undo again
-                const success = await undoLastCardMove();
-                if (success) {
-                    renderBoard();
-                    showUndoToast(t('cardMoveUndone') || 'Card move undone', true);
-                }
-            }
-        };
-
-        undoToastElement.classList.add('visible');
-
-        // Auto-hide after 4 seconds
-        clearTimeout(undoToastTimeout);
-        undoToastTimeout = setTimeout(() => {
-            undoToastElement.classList.remove('visible');
-        }, 4000);
-    }
-
-    function hideUndoToast() {
-        if (undoToastElement) {
-            undoToastElement.classList.remove('visible');
-        }
-    }
-
-    // Toast for card archive/delete actions with undo
-    let cardActionToastElement = null;
-    let cardActionToastTimeout = null;
-
-    function showCardActionToast(message, actionType) {
-        if (!cardActionToastElement) {
-            cardActionToastElement = document.createElement('div');
-            cardActionToastElement.className = 'undo-toast card-action-toast';
-            document.body.appendChild(cardActionToastElement);
-        }
-
-        const undoLabel = t('undo') || 'Undo';
-
-        cardActionToastElement.innerHTML = `
-            <span>${message}</span>
-            <button class="toast-action-btn">${undoLabel}</button>
-        `;
-
-        // Wire up the undo button
-        const btn = cardActionToastElement.querySelector('.toast-action-btn');
-        btn.onclick = () => {
-            if (cardActionUndoStack.length > 0) {
-                const lastAction = cardActionUndoStack.pop();
-                const targetList = currentProject.lists.find(l => l.id === lastAction.listId);
-
-                if (targetList) {
-                    // Restore the card to its original position
-                    targetList.cards.splice(lastAction.index, 0, lastAction.card);
-
-                    // If it was an archive, remove from archive
-                    if (lastAction.type === 'archive' && currentProject.archive) {
-                        currentProject.archive.cards = currentProject.archive.cards.filter(
-                            c => c.id !== lastAction.card.id
-                        );
-                    }
-
-                    saveData(window.currentData);
-                    renderBoard();
-
-                    // Show restored message
-                    cardActionToastElement.innerHTML = `<span>${t('actionRestored') || 'Restored'}</span>`;
-                    setTimeout(() => {
-                        cardActionToastElement.classList.remove('visible');
-                    }, 1500);
-                    return;
-                }
-            }
-            cardActionToastElement.classList.remove('visible');
-        };
-
-        cardActionToastElement.classList.add('visible');
-
-        clearTimeout(cardActionToastTimeout);
-        cardActionToastTimeout = setTimeout(() => {
-            cardActionToastElement.classList.remove('visible');
-        }, 5000); // Give user more time for important actions
-    }
 
     // Keyboard shortcut: Ctrl+Z to undo last card move
     document.addEventListener('keydown', async (e) => {
-        // Only handle Ctrl+Z (not in input fields)
+        // Only handle Ctrl+Z in board view (not in input fields)
         if (e.ctrlKey && e.key === 'z' && !e.target.matches('input, textarea, [contenteditable]')) {
-            // Check if there's something to undo
-            if (cardMoveUndoStack.length > 0) {
-                e.preventDefault();
-                // Save redo info before undoing
-                const undoInfo = cardMoveUndoStack[cardMoveUndoStack.length - 1];
-                if (undoInfo) {
-                    cardRedoStack.push({
-                        cardId: undoInfo.cardId,
-                        fromListId: undoInfo.fromListId,
-                        toListId: undoInfo.toListId,
-                        toIndex: undoInfo.toIndex
-                    });
-                }
-                const success = await undoLastCardMove();
-                if (success) {
-                    renderBoard();
-                    showUndoToast(t('cardMoveUndone') || 'Card move undone', true);
+            // Check if board view is active
+            const boardView = document.getElementById('board');
+            if (boardView && !boardView.classList.contains('hidden')) {
+                if (UndoManager.canUndoCardMove()) {
+                    e.preventDefault();
+                    if (UndoManager.undoCardMove(currentProject)) {
+                        renderBoard();
+                        saveDataDebounced(window.currentData);
+                        UndoManager.showCardMoveUndoToast();
+                    }
                 }
             }
         }
@@ -2275,23 +2139,20 @@ async function initProjectPage() {
                         listId: list.id
                     });
 
-                    // Push to undo stack
-                    cardActionUndoStack.push({
+                    // Push to undo stack via UndoManager
+                    UndoManager.pushCardAction({
                         type: 'archive',
                         card: cardCopy,
                         listId: list.id,
                         index: cardIndex
                     });
-                    if (cardActionUndoStack.length > MAX_UNDO_STACK) {
-                        cardActionUndoStack.shift();
-                    }
 
                     saveData(window.currentData);
                     modal.classList.add("hidden");
                     renderBoard();
 
-                    // Show undo toast
-                    showCardActionToast(t('archived') || 'Card archived', 'archive');
+                    // Show undo toast via UndoManager
+                    UndoManager.showCardActionToast(t('archived') || 'Card archived');
                 }
             };
         }
@@ -2307,23 +2168,20 @@ async function initProjectPage() {
                     // Remove from its list
                     list.cards = list.cards.filter(c => c.id !== card.id);
 
-                    // Push to undo stack
-                    cardActionUndoStack.push({
+                    // Push to undo stack via UndoManager
+                    UndoManager.pushCardAction({
                         type: 'delete',
                         card: cardCopy,
                         listId: list.id,
                         index: cardIndex
                     });
-                    if (cardActionUndoStack.length > MAX_UNDO_STACK) {
-                        cardActionUndoStack.shift();
-                    }
 
                     saveData(window.currentData);
                     modal.classList.add("hidden");
                     renderBoard();
 
-                    // Show undo toast
-                    showCardActionToast(t('delete') || 'Card deleted', 'delete');
+                    // Show undo toast via UndoManager
+                    UndoManager.showCardActionToast(t('deleted') || 'Card deleted');
                 }
             };
         }

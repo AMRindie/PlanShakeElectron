@@ -189,7 +189,7 @@ class WhiteboardEngine {
                 },
                 onUndo: () => {
                     if (this.stateManager.undo()) {
-                        this.renderEngine.requestRedraw();
+                        this.renderEngine.forceDraw();
                         this.objectManager.renderAll();
                         this.showUndoRedoToast('Action undone');
                         this.updateUndoRedoButtons();
@@ -197,7 +197,7 @@ class WhiteboardEngine {
                 },
                 onRedo: () => {
                     if (this.stateManager.redo()) {
-                        this.renderEngine.requestRedraw();
+                        this.renderEngine.forceDraw();
                         this.objectManager.renderAll();
                         this.showUndoRedoToast('Action restored');
                         this.updateUndoRedoButtons();
@@ -209,6 +209,9 @@ class WhiteboardEngine {
         // Setup UI controls
         this.setupUI();
 
+        // Setup keyboard shortcuts for undo/redo
+        this.setupKeyboardShortcuts();
+
         // Setup resize observer
         this.resizeObserver = new ResizeObserver(() => {
             this.handleResize();
@@ -217,6 +220,9 @@ class WhiteboardEngine {
 
         // Update initial view
         this.updateViewTransform();
+
+        // Update undo/redo button states
+        this.updateUndoRedoButtons();
 
         return true;
     }
@@ -280,24 +286,22 @@ class WhiteboardEngine {
 
         // Undo/Redo buttons with toast notifications
         if (this.elements.wbUndoBtn) {
+            console.log('[WB] Setting up undo button');
             this.elements.wbUndoBtn.onclick = () => {
-                if (this.stateManager.undo()) {
-                    this.renderEngine.requestRedraw();
-                    this.objectManager.renderAll();
-                    this.showUndoRedoToast('Action undone');
-                    this.updateUndoRedoButtons();
-                }
+                console.log('[WB] Undo button clicked');
+                this.performUndo();
             };
+        } else {
+            console.log('[WB] wbUndoBtn not found!');
         }
         if (this.elements.wbRedoBtn) {
+            console.log('[WB] Setting up redo button');
             this.elements.wbRedoBtn.onclick = () => {
-                if (this.stateManager.redo()) {
-                    this.renderEngine.requestRedraw();
-                    this.objectManager.renderAll();
-                    this.showUndoRedoToast('Action restored');
-                    this.updateUndoRedoButtons();
-                }
+                console.log('[WB] Redo button clicked');
+                this.performRedo();
             };
+        } else {
+            console.log('[WB] wbRedoBtn not found!');
         }
 
         // Pen controls
@@ -471,11 +475,87 @@ class WhiteboardEngine {
         }
     }
 
+    // ================================
+    // SELF-CONTAINED UNDO/REDO SYSTEM
+    // ================================
+
     /**
-     * Show undo/redo toast notification
+     * Perform undo operation
      */
-    showUndoRedoToast(message) {
-        // Create or reuse toast
+    performUndo() {
+        if (this.stateManager.undo()) {
+            // Synchronously redraw
+            this.renderEngine.forceDraw();
+            this.objectManager.renderAll();
+            this.updateUndoRedoButtons();
+            this.showWhiteboardToast('undo');
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Perform redo operation
+     */
+    performRedo() {
+        if (this.stateManager.redo()) {
+            // Synchronously redraw
+            this.renderEngine.forceDraw();
+            this.objectManager.renderAll();
+            this.updateUndoRedoButtons();
+            this.showWhiteboardToast('redo');
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Setup keyboard shortcuts for undo/redo
+     */
+    setupKeyboardShortcuts() {
+        document.addEventListener('keydown', (e) => {
+            // Only handle when whiteboard is visible
+            if (!this.elements.whiteboardView || this.elements.whiteboardView.classList.contains('hidden')) {
+                return;
+            }
+
+            // Skip if user is in an input field
+            if (e.target.matches('input, textarea, [contenteditable]')) {
+                return;
+            }
+
+            // Ctrl+Z for undo
+            if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+                e.preventDefault();
+                this.performUndo();
+            }
+            // Ctrl+Y or Ctrl+Shift+Z for redo
+            if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
+                e.preventDefault();
+                this.performRedo();
+            }
+        });
+    }
+
+    /**
+     * Show simple whiteboard toast notification
+     */
+    showWhiteboardToast(action) {
+        const t = window.t || ((key) => null);
+        const isUndo = action === 'undo';
+
+        const message = isUndo
+            ? (t('actionUndone') || 'Action undone')
+            : (t('actionRestored') || 'Action restored');
+
+        const oppositeLabel = isUndo
+            ? (t('redo') || 'Redo')
+            : (t('undo') || 'Undo');
+
+        // Use global hideAllToasts if available
+        if (window.hideAllToasts) window.hideAllToasts();
+
+        // Create or reuse toast element
         let toast = document.querySelector('.wb-undo-toast');
         if (!toast) {
             toast = document.createElement('div');
@@ -483,44 +563,35 @@ class WhiteboardEngine {
             document.body.appendChild(toast);
         }
 
-        // Determine if this was an undo or redo action
-        const isUndo = message.toLowerCase().includes('undone');
-        const oppositeAction = isUndo ? 'Redo' : 'Undo';
-
         toast.innerHTML = `
             <span>${message}</span>
-            <button class="toast-action-btn" data-action="${isUndo ? 'redo' : 'undo'}">${oppositeAction}</button>
+            <button class="toast-action-btn">${oppositeLabel}</button>
         `;
 
-        // Wire up the button
         const btn = toast.querySelector('.toast-action-btn');
         btn.onclick = () => {
             if (isUndo) {
-                // Redo the action
-                if (this.stateManager.redo()) {
-                    this.renderEngine.requestRedraw();
-                    this.objectManager.renderAll();
-                    this.showUndoRedoToast('Action restored');
-                    this.updateUndoRedoButtons();
-                }
+                this.performRedo();
             } else {
-                // Undo the action
-                if (this.stateManager.undo()) {
-                    this.renderEngine.requestRedraw();
-                    this.objectManager.renderAll();
-                    this.showUndoRedoToast('Action undone');
-                    this.updateUndoRedoButtons();
-                }
+                this.performUndo();
             }
         };
 
         toast.classList.add('visible');
 
-        // Auto-hide after 4 seconds
-        clearTimeout(this._toastTimeout);
-        this._toastTimeout = setTimeout(() => {
+        // Auto-hide
+        clearTimeout(this._wbToastTimeout);
+        this._wbToastTimeout = setTimeout(() => {
             toast.classList.remove('visible');
         }, 4000);
+    }
+
+    /**
+     * Legacy method for compatibility
+     */
+    showUndoRedoToast(message) {
+        const isUndo = message.toLowerCase().includes('undone');
+        this.showWhiteboardToast(isUndo ? 'undo' : 'redo');
     }
 
     /**

@@ -13,6 +13,22 @@ class StateManager {
         this.saveCallback = null;
         this.saveDebounceTimer = null;
         this.saveDebounceDelay = 300; // ms
+
+        // Record initial state so first undo has something to revert to
+        this.recordInitialState();
+    }
+
+    /**
+     * Record the initial state (called once on construction)
+     */
+    recordInitialState() {
+        const wb = this.getWhiteboard();
+        const snapshot = {
+            items: structuredClone(wb.items || []),
+            strokes: structuredClone(wb.strokes || [])
+        };
+        this.history.push(snapshot);
+        this.historyIndex = 0;
     }
 
     /**
@@ -93,6 +109,20 @@ class StateManager {
             return true;
         }
         return false;
+    }
+
+    /**
+     * Check if undo is available
+     */
+    canUndo() {
+        return this.historyIndex > 0;
+    }
+
+    /**
+     * Check if redo is available
+     */
+    canRedo() {
+        return this.historyIndex < this.history.length - 1;
     }
 
     /**

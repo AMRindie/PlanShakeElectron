@@ -167,11 +167,13 @@ class InteractionHandler {
             this.hasMovedItem = false;
             this.stateManager.scheduleSave();
             this.callbacks.onCursorUpdate();
+            if (this.callbacks.onActionEnd) this.callbacks.onActionEnd();
         }
 
         if (this.isDrawing) {
             this.isDrawing = false;
             this.callbacks.onDrawEnd();
+            if (this.callbacks.onActionEnd) this.callbacks.onActionEnd();
         }
     }
 

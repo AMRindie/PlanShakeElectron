@@ -53,6 +53,14 @@ class RenderEngine {
         }
     }
 
+    /**
+     * Force an immediate synchronous redraw (use for undo/redo)
+     */
+    forceDraw() {
+        this.draw();
+        this.needsRedraw = false;
+    }
+
     render(timestamp) {
         this.rafId = null;
         if (this.needsRedraw) {
@@ -66,6 +74,7 @@ class RenderEngine {
 
     draw() {
         const wb = this.stateManager.getWhiteboard();
+
         // Use logical width/height for clearing (not physical)
         const width = this.canvas.width / this.dpr;
         const height = this.canvas.height / this.dpr;

@@ -271,43 +271,7 @@
     }
 
     function bindEvents(toolbar) {
-        // Toast helper for undo/redo with action buttons
-        function showNotesUndoToast(message) {
-            let toast = document.querySelector('.notes-undo-toast');
-            if (!toast) {
-                toast = document.createElement('div');
-                toast.className = 'undo-toast notes-undo-toast';
-                document.body.appendChild(toast);
-            }
-
-            // Determine if this was an undo or redo action
-            const isUndo = message.toLowerCase().includes('undone');
-            const oppositeAction = isUndo ? 'Redo' : 'Undo';
-
-            toast.innerHTML = `
-                <span>${message}</span>
-                <button class="toast-action-btn">${oppositeAction}</button>
-            `;
-
-            // Wire up the button
-            const btn = toast.querySelector('.toast-action-btn');
-            btn.onclick = () => {
-                if (isUndo) {
-                    document.execCommand('redo', false, null);
-                    showNotesUndoToast('Action restored');
-                } else {
-                    document.execCommand('undo', false, null);
-                    showNotesUndoToast('Action undone');
-                }
-                triggerSaveAndToc();
-            };
-
-            toast.classList.add('visible');
-            clearTimeout(toast._hideTimeout);
-            toast._hideTimeout = setTimeout(() => {
-                toast.classList.remove('visible');
-            }, 4000);
-        }
+        // Use UndoManager for toast notifications (defined in app.undo.js)
 
         toolbar.querySelectorAll("button[data-cmd]").forEach(btn => {
             btn.onclick = (e) => {
@@ -317,10 +281,14 @@
                     document.execCommand('unlink', false, null);
                 } else if (btn.dataset.cmd === 'undo') {
                     document.execCommand('undo', false, null);
-                    showNotesUndoToast('Action undone');
+                    if (window.UndoManager) {
+                        UndoManager.showNotesUndoToast(true, triggerSaveAndToc);
+                    }
                 } else if (btn.dataset.cmd === 'redo') {
                     document.execCommand('redo', false, null);
-                    showNotesUndoToast('Action restored');
+                    if (window.UndoManager) {
+                        UndoManager.showNotesUndoToast(false, triggerSaveAndToc);
+                    }
                 } else {
                     document.execCommand(btn.dataset.cmd, false, null);
                 }
@@ -336,17 +304,23 @@
                 e.preventDefault();
                 if (e.shiftKey) {
                     document.execCommand('redo', false, null);
-                    showNotesUndoToast('Action restored');
+                    if (window.UndoManager) {
+                        UndoManager.showNotesUndoToast(false, triggerSaveAndToc);
+                    }
                 } else {
                     document.execCommand('undo', false, null);
-                    showNotesUndoToast('Action undone');
+                    if (window.UndoManager) {
+                        UndoManager.showNotesUndoToast(true, triggerSaveAndToc);
+                    }
                 }
                 triggerSaveAndToc();
             }
             if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
                 e.preventDefault();
                 document.execCommand('redo', false, null);
-                showNotesUndoToast('Action restored');
+                if (window.UndoManager) {
+                    UndoManager.showNotesUndoToast(false, triggerSaveAndToc);
+                }
                 triggerSaveAndToc();
             }
         });
