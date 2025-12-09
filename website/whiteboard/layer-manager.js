@@ -165,7 +165,7 @@ class LayerManager {
      */
     async clearActiveLayer() {
         if (await customConfirm(t('clearLayerConfirm'), { title: t('clearLayer'), confirmText: t('clear'), danger: true })) {
-            this.stateManager.recordHistory();
+            // Note: recordHistory is now called internally by clearLayer with proper action tracking
             this.stateManager.clearLayer(this.activeLayerId);
             this.callbacks.onLayerChange();
         }

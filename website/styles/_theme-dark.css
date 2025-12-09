@@ -1158,3 +1158,38 @@
 [data-theme="dark"] .secondary-btn:hover {
     background: rgba(255, 255, 255, 0.15);
 }
+
+/* Header Actions Group - Dark Mode */
+[data-theme="dark"] .header-actions-group {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .header-actions-group .divider-vertical {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+/* Save Status Indicator - Dark Mode */
+[data-theme="dark"] .save-status {
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .save-status.status-saved {
+    color: #4ade80;
+    background: rgba(74, 222, 128, 0.15);
+}
+
+[data-theme="dark"] .save-status.status-saving {
+    color: #60a5fa;
+    background: rgba(96, 165, 250, 0.15);
+}
+
+[data-theme="dark"] .save-status.status-unsaved {
+    color: #fb923c;
+    background: rgba(251, 146, 60, 0.15);
+}
+
+[data-theme="dark"] .save-status.status-error {
+    color: #f87171;
+    background: rgba(248, 113, 113, 0.15);
+}

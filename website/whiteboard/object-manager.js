@@ -179,7 +179,7 @@ class ObjectManager {
                 const wb = this.stateManager.getWhiteboard();
                 const item = wb.items.find(i => i.id === itemId);
                 if (item) {
-                    this.stateManager.recordHistory();
+                    // Note: recordHistory is now called internally by updateItem with proper action tracking
                     const resizeInfo = {
                         itemId: itemId,
                         startX: item.x, startY: item.y,
@@ -289,10 +289,13 @@ class ObjectManager {
             }
         }
 
-        item.w = newW;
-        item.h = newH;
-        item.x = newX;
-        item.y = newY;
+        // Use updateItem for proper undo tracking (groupable resizes)
+        this.stateManager.updateItem(resizeInfo.itemId, {
+            w: newW,
+            h: newH,
+            x: newX,
+            y: newY
+        }, this.stateManager.ACTION_TYPES.RESIZE_ITEM);
 
         resizeInfo.startW = newW;
         resizeInfo.startH = newH;
@@ -319,7 +322,7 @@ class ObjectManager {
             content: content
         };
         if (type === 'note') item.backgroundColor = '#fff740';
-        this.stateManager.recordHistory();
+        // Note: recordHistory is now called internally by addItem with proper action tracking
         this.stateManager.addItem(item);
         const el = this.createItemElement(item);
         this.container.appendChild(el);
@@ -332,7 +335,7 @@ class ObjectManager {
             el.remove();
             this.elementPool.delete(itemId);
         }
-        this.stateManager.recordHistory();
+        // Note: recordHistory is now called internally by deleteItem with proper action tracking
         this.stateManager.deleteItem(itemId);
     }
 
@@ -349,8 +352,11 @@ class ObjectManager {
         const wb = this.stateManager.getWhiteboard();
         const item = wb.items.find(i => i.id === itemId);
         if (item) {
-            item.x += dx;
-            item.y += dy;
+            // Use updateItem for proper undo tracking (groupable moves)
+            this.stateManager.updateItem(itemId, {
+                x: item.x + dx,
+                y: item.y + dy
+            });
             this.updateItemTransform(null, item);
         }
     }

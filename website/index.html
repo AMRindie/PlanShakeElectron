@@ -148,6 +148,37 @@
           </select>
         </div>
         <div class="modal-section">
+          <label data-i18n="saveSettings">Save Settings</label>
+          <div class="setting-row"
+            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <span data-i18n="enableAutoSave">Enable Auto-Save</span>
+            <label class="cover-mode-toggle" for="autoSaveToggle">
+              <input type="checkbox" id="autoSaveToggle">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <div id="autoSaveOptions" class="hidden">
+            <div class="setting-row"
+              style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <span data-i18n="smartSave">Smart Save</span>
+              <label class="cover-mode-toggle" for="smartSaveToggle">
+                <input type="checkbox" id="smartSaveToggle">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div id="autoSaveIntervalContainer">
+              <label for="autoSaveInterval" data-i18n="saveInterval">Save Interval</label>
+              <select id="autoSaveInterval" style="width: 100%; margin-top: 6px;">
+                <option value="30s" data-i18n="thirtySeconds">30 seconds</option>
+                <option value="1m" selected data-i18n="oneMinute">1 minute</option>
+                <option value="2m" data-i18n="twoMinutes">2 minutes</option>
+                <option value="5m" data-i18n="fiveMinutes">5 minutes</option>
+                <option value="10m" data-i18n="tenMinutes">10 minutes</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="modal-section">
           <label data-i18n="cacheManagement">Cache Management</label>
           <div class="setting-row"
             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
@@ -204,6 +235,9 @@
   <script src="app.storage.js"></script>
   <script src="app.data.js"></script>
   <script src="app.i18n.js"></script>
+  <script src="app.shortcuts.js"></script>
+  <script src="app.undo.js"></script>
+  <script src="app.save.js"></script>
   <script src="app.js"></script>
   <script src="app.colorpicker.js"></script>
   <script src="app.datepicker.js"></script>

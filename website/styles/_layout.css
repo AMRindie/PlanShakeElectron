@@ -76,6 +76,81 @@
     margin: 0 4px;
 }
 
+/* Header Actions Group (Undo/Redo/Save) */
+.header-actions-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    position: relative;
+    z-index: 10;
+}
+
+.header-actions-group .icon-btn {
+    width: 32px;
+    height: 32px;
+}
+
+.header-actions-group .icon-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.header-actions-group .icon-btn:disabled:hover {
+    background: transparent;
+    transform: none;
+}
+
+.header-actions-group .divider-vertical {
+    height: 16px;
+    margin: 0 2px;
+}
+
+/* Save Status Indicator */
+.save-status {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 999px;
+    transition: all 0.3s ease;
+}
+
+.save-status.status-saved {
+    color: var(--accent-green);
+    background: rgba(52, 199, 89, 0.1);
+}
+
+.save-status.status-saving {
+    color: var(--accent-blue);
+    background: rgba(0, 122, 255, 0.1);
+    animation: pulse 1s infinite;
+}
+
+.save-status.status-unsaved {
+    color: var(--accent-orange);
+    background: rgba(255, 149, 0, 0.1);
+}
+
+.save-status.status-error {
+    color: var(--accent-red);
+    background: rgba(255, 59, 48, 0.1);
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.6;
+    }
+}
+
 .project-title-wrapper {
     display: flex;
     align-items: center;

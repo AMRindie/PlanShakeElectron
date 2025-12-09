@@ -130,7 +130,7 @@ class WhiteboardEngine {
                         return;
                     }
 
-                    this.stateManager.recordHistory();
+                    // Note: recordHistory is now called internally by addStroke with proper action tracking
                     this.renderEngine.startStroke(
                         this.layerManager.getActiveLayerId(),
                         point,
@@ -162,7 +162,7 @@ class WhiteboardEngine {
                     }
                 },
                 onItemDragStart: () => {
-                    this.stateManager.recordHistory();
+                    // Note: recordHistory is now called internally by updateItem with proper action tracking
                 },
                 onItemDrag: (itemId, dx, dy) => {
                     this.objectManager.dragItem(itemId, dx, dy);
@@ -483,12 +483,12 @@ class WhiteboardEngine {
      * Perform undo operation
      */
     performUndo() {
-        if (this.stateManager.undo()) {
+        const result = this.stateManager.undo();
+        if (result) {
             // Synchronously redraw
             this.renderEngine.forceDraw();
             this.objectManager.renderAll();
             this.updateUndoRedoButtons();
-            this.showWhiteboardToast('undo');
             return true;
         }
         return false;
@@ -498,12 +498,12 @@ class WhiteboardEngine {
      * Perform redo operation
      */
     performRedo() {
-        if (this.stateManager.redo()) {
+        const result = this.stateManager.redo();
+        if (result) {
             // Synchronously redraw
             this.renderEngine.forceDraw();
             this.objectManager.renderAll();
             this.updateUndoRedoButtons();
-            this.showWhiteboardToast('redo');
             return true;
         }
         return false;
@@ -513,6 +513,24 @@ class WhiteboardEngine {
      * Setup keyboard shortcuts for undo/redo
      */
     setupKeyboardShortcuts() {
+        // Listen for global undo/redo events from header buttons
+        document.addEventListener('viewUndo', (e) => {
+            if (e.detail.view === 'whiteboardView' &&
+                this.elements.whiteboardView &&
+                !this.elements.whiteboardView.classList.contains('hidden')) {
+                this.performUndo();
+            }
+        });
+
+        document.addEventListener('viewRedo', (e) => {
+            if (e.detail.view === 'whiteboardView' &&
+                this.elements.whiteboardView &&
+                !this.elements.whiteboardView.classList.contains('hidden')) {
+                this.performRedo();
+            }
+        });
+
+        // Legacy keyboard shortcut handling (now redundant with global UndoManager, but kept for safety)
         document.addEventListener('keydown', (e) => {
             // Only handle when whiteboard is visible
             if (!this.elements.whiteboardView || this.elements.whiteboardView.classList.contains('hidden')) {
@@ -524,29 +542,38 @@ class WhiteboardEngine {
                 return;
             }
 
-            // Ctrl+Z for undo
+            // Ctrl+Z for undo (handled by global UndoManager now, but kept as fallback)
             if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
-                e.preventDefault();
-                this.performUndo();
+                // Don't prevent default - let global handler catch it
+                return;
             }
             // Ctrl+Y or Ctrl+Shift+Z for redo
             if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
-                e.preventDefault();
-                this.performRedo();
+                // Don't prevent default - let global handler catch it
+                return;
             }
         });
     }
 
     /**
      * Show simple whiteboard toast notification
+     * @param {string} action - 'undo' or 'redo'
+     * @param {string} actionDescription - Optional specific action description
      */
-    showWhiteboardToast(action) {
+    showWhiteboardToast(action, actionDescription = null) {
         const t = window.t || ((key) => null);
         const isUndo = action === 'undo';
 
-        const message = isUndo
-            ? (t('actionUndone') || 'Action undone')
-            : (t('actionRestored') || 'Action restored');
+        // Use specific action description if provided, otherwise use generic
+        let message;
+        if (actionDescription) {
+            const prefix = isUndo ? (t('undone') || 'Undone') : (t('redone') || 'Redone');
+            message = `${prefix}: ${actionDescription}`;
+        } else {
+            message = isUndo
+                ? (t('actionUndone') || 'Action undone')
+                : (t('actionRestored') || 'Action restored');
+        }
 
         const oppositeLabel = isUndo
             ? (t('redo') || 'Redo')

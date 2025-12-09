@@ -1470,7 +1470,8 @@ async function initProjectPage() {
                     fromListId: sourceList.id,
                     toListId: targetList.id,
                     fromIndex: cardIdx,
-                    toIndex: null // will be set after insertion
+                    toIndex: null, // will be set after insertion
+                    timestamp: Date.now()
                 };
 
                 const [card] = sourceList.cards.splice(cardIdx, 1);
@@ -1504,6 +1505,7 @@ async function initProjectPage() {
 
                 await saveData(window.currentData);
                 renderBoard();
+                UndoManager.updateButtonStates();
             });
 
 
@@ -1724,10 +1726,10 @@ async function initProjectPage() {
             const targetId = button.dataset.viewTarget;
             document.getElementById(targetId).classList.remove("hidden");
 
-            // Hide all undo toasts when switching views
-            document.querySelectorAll('.undo-toast').forEach(toast => {
-                toast.classList.remove('visible');
-            });
+            // Update UndoManager's current view for per-view undo/redo
+            if (window.UndoManager && window.UndoManager.setCurrentView) {
+                window.UndoManager.setCurrentView(targetId);
+            }
 
             // Hide whiteboard context menu when switching views
             const wbContextMenu = document.getElementById('wbContextMenu');
@@ -1755,29 +1757,36 @@ async function initProjectPage() {
     setupPlannerPanel();
 
     // ======================
-    // UNDO KEYBOARD SHORTCUT (Ctrl+Z) - Uses UndoManager
+    // BOARD UNDO/REDO EVENT HANDLERS
     // ======================
 
-    // Keyboard shortcut: Ctrl+Z to undo last card move
-    document.addEventListener('keydown', async (e) => {
-        // Only handle Ctrl+Z in board view (not in input fields)
-        if (e.ctrlKey && e.key === 'z' && !e.target.matches('input, textarea, [contenteditable]')) {
-            // Check if board view is active
-            const boardView = document.getElementById('board');
-            if (boardView && !boardView.classList.contains('hidden')) {
-                if (UndoManager.canUndoCardMove()) {
-                    e.preventDefault();
-                    if (UndoManager.undoCardMove(currentProject)) {
-                        renderBoard();
-                        saveDataDebounced(window.currentData);
-                        UndoManager.showCardMoveUndoToast();
-                    }
+    // Listen for global viewUndo events from header buttons
+    document.addEventListener('viewUndo', async (e) => {
+        if (e.detail.view === 'board') {
+            if (UndoManager.canUndoBoard()) {
+                if (UndoManager.performBoardUndo(currentProject)) {
+                    renderBoard();
+                    saveDataDebounced(window.currentData);
+                    UndoManager.updateButtonStates();
                 }
             }
         }
     });
 
-    // Listen for undo events (triggered by undoLastCardMove)
+    // Listen for global viewRedo events from header buttons
+    document.addEventListener('viewRedo', async (e) => {
+        if (e.detail.view === 'board') {
+            if (UndoManager.canRedoBoard()) {
+                if (UndoManager.performBoardRedo(currentProject)) {
+                    renderBoard();
+                    saveDataDebounced(window.currentData);
+                    UndoManager.updateButtonStates();
+                }
+            }
+        }
+    });
+
+    // Legacy event listener for backwards compatibility
     window.addEventListener('cardMoveUndo', () => {
         renderBoard();
     });
@@ -2144,15 +2153,14 @@ async function initProjectPage() {
                         type: 'archive',
                         card: cardCopy,
                         listId: list.id,
-                        index: cardIndex
+                        index: cardIndex,
+                        timestamp: Date.now()
                     });
 
                     saveData(window.currentData);
                     modal.classList.add("hidden");
                     renderBoard();
-
-                    // Show undo toast via UndoManager
-                    UndoManager.showCardActionToast(t('archived') || 'Card archived');
+                    UndoManager.updateButtonStates();
                 }
             };
         }
@@ -2173,15 +2181,14 @@ async function initProjectPage() {
                         type: 'delete',
                         card: cardCopy,
                         listId: list.id,
-                        index: cardIndex
+                        index: cardIndex,
+                        timestamp: Date.now()
                     });
 
                     saveData(window.currentData);
                     modal.classList.add("hidden");
                     renderBoard();
-
-                    // Show undo toast via UndoManager
-                    UndoManager.showCardActionToast(t('deleted') || 'Card deleted');
+                    UndoManager.updateButtonStates();
                 }
             };
         }

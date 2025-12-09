@@ -16,6 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        # If you don't need Linux/Mac builds right now, you can remove them to save build minutes
         os: [windows-latest, macos-latest, ubuntu-latest]
 
     steps:
@@ -33,4 +34,5 @@ jobs:
       - name: Build and publish
         run: npm run publish
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # CHANGE HERE: Use the custom token you created
+          GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
