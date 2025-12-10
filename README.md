@@ -13,7 +13,7 @@
 </p>
 
 
-## Features (condensed)
+## Features
 
 ### Project Management
 - **Kanban Board** — Organize tasks with drag-and-drop lists and cards
