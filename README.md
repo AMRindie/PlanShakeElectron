@@ -9,70 +9,47 @@
 </p>
 
 <p align="center">
-  Built with Electron • Works fully offline • Your data stays on your device
+  <img src="https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-blue?style=flat-square" alt="Platform">
+  <img src="https://img.shields.io/badge/Data-Local%20%26%20Private-green?style=flat-square" alt="Privacy">
+  <img src="https://img.shields.io/badge/Status-Proprietary-orange?style=flat-square" alt="Status">
 </p>
 
-
-## Features (condensed)
-
-### Project Management
-- **Kanban Board** — Organize tasks with drag-and-drop lists and cards
-- **Project Status Tracking** — Categorize projects as Active, To Do, or Finished
-- **Custom Project Covers** — Personalize projects with colors or images
-- **Tags & Labels** — Add color-coded labels to organize cards
-- **Card Checklists** — Break down tasks into actionable items with progress tracking
-
-### Timeline & Planning
-- **Gantt Chart View** — Visualize project timelines with milestone bars
-- **Calendar View** — See milestones and deadlines in a familiar calendar format
-- **Today Marker** — Always know where you are in the timeline
-- **Zoom Controls** — Adjust the timeline view from days to weeks
-- **Milestone Panel** — Create and manage project milestones
-- **Priority Levels** — Set High, Medium, or Low priority for each milestone
-- **Date Ranges** — Define start and end dates for milestones
-- **Quick Add** — Fast milestone creation with keyboard shortcuts
-
-### Notes & Whiteboard
-- **Rich Text Editor** — Full formatting with bold, italic, underline, strikethrough
-- **Headers & Styling** — Create structured notes with H1, H2, H3 headings
-- **Table of Contents** — Auto-generated navigation from your headers
-- **Image Support** — Insert and resize images directly in notes
-- **Checklists** — Create interactive to-do lists within notes
-- **Text Direction** — Support for left-to-right and right-to-left text
-- **Freehand Drawing** — Sketch ideas with customizable pen tools
-- **Shape Tools** — Add rectangles, circles, and other shapes
-- **Layer Management** — Organize drawings with multiple layers
-- **Color Palette** — Full color picker with opacity controls
-- **Zoom & Pan** — Navigate large whiteboards with ease
-
-### Archive
-- **Card Archive** — Archive completed cards without deleting them
-- **Restore & Delete** — Easily restore archived items or permanently remove them
-- **Done Card Auto-Archive** — Automatically archive cards when checklists are complete
-
-### Languages, Themes & Settings
-- **Multi-language Support** — Currently supports English and Arabic
-- **Easy Translation System** — JSON-based translation files for easy customization
-- **Light Mode** — Clean, bright interface
-- **Dark Mode** — Easy on the eyes for night work
-- **Consistent Styling** — Theme applies across all components
-- **Language Selector** — Switch between available languages
-- **Theme Toggle** — Choose your preferred appearance
-- **Cache Management** — View cache size, clear cache, toggle caching
-- **Data Management** — Clear all projects when needed
-- **Version Display** — See current app version
-
-### Data & Native Experience
-- **Fully Offline** — All data stored locally, no internet required
-- **Persistent Storage** — Your projects survive app restarts
-- **Import/Export** — Backup and restore your data as JSON files
-- **Auto-Save** — Changes are saved automatically
-- **Cross-Platform** — Windows, macOS, and Linux support
-- **Auto Updates** — Get the latest features automatically
-- **Native Window Controls** — Feels like a native application
-- **Fast Launch** — Splash screen with quick startup
-
 ---
+
+## About
+
+**PlanShake** is a powerful, proprietary project management application designed for speed, privacy, and efficiency. Unlike cloud-based tools, PlanShake is **offline-first**, meaning all your data lives on your device. You own your data, and you can work anywhere without an internet connection.
+
+Whether you are managing complex projects, sketching ideas on a whiteboard, or planning timelines, PlanShake provides a seamless, native experience.
+
+## Key Features
+
+PlanShake is packed with tools to help you organize your work. For a complete list of features, see **[Features.md](Features.md)**.
+
+*   **Project Hub**: Manage multiple projects with custom icons and covers.
+*   **Kanban Board**: Drag-and-drop tasks with rich details, checklists, and labels.
+*   **Timeline & Calendar**: Visualize deadlines with Gantt charts and calendar views.
+*   **Rich Notes**: Create detailed documents with a powerful rich text editor.
+*   **Interactive Whiteboard**: Sketch, draw, and brainstorm on an infinite canvas.
+*   **Privacy & Speed**: Zero latency, no loading screens, and full privacy.
+
+## Gallery
+
+| Project Hub | Dark Mode |
+|:---:|:---:|
+| <img src="screenshots/ProjectsView.png" width="400" alt="Projects View"> | <img src="screenshots/projectviewdarkmode.png" width="400" alt="Dark Mode"> |
+
+| Kanban Board | Card Details |
+|:---:|:---:|
+| <img src="screenshots/BoardView.png" width="400" alt="Kanban Board"> | <img src="screenshots/Editcardmodal.png" width="400" alt="Card Modal"> |
+
+| Timeline | Milestones |
+|:---:|:---:|
+| <img src="screenshots/Timelineview.png" width="400" alt="Timeline"> | <img src="screenshots/MilestoneView.png" width="400" alt="Milestones"> |
+
+| Rich Notes | Whiteboard |
+|:---:|:---:|
+| <img src="screenshots/notesview.png" width="400" alt="Notes"> | <img src="screenshots/whitebaordview.png" width="400" alt="Whiteboard"> |
 
 ## Installation
 
