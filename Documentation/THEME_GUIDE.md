@@ -30,7 +30,7 @@
 ### Method 1: Settings Button (Recommended)
 
 1. Open PlanShake
-2. Click the **Settings** icon (⚙️) in the sidebar
+2. Click the **Settings** icon (⚙️) in the header
 3. Find the **Style Theme** dropdown
 4. Click the **📁+** button next to the dropdown
 5. Navigate to your theme folder and select it
@@ -171,7 +171,7 @@ Modify the color variables in `_variables.css`:
 }
 ```
 
-For a sharp, angular look (like the Neo-Brutalist theme):
+For a sharp, angular look:
 ```css
 :root {
     --radius-panel: 0px;
@@ -215,7 +215,7 @@ For a sharp, angular look (like the Neo-Brutalist theme):
 
 ### PNG Icons
 
-Place PNG icons (24x24 pixels recommended) in the `icons/` folder. Icon filenames should match exactly:
+Place PNG icons in the `icons/` folder. Icon filenames should match exactly:
 
 - `Bold.png`
 - `Calender.png`
@@ -285,19 +285,6 @@ Always include dark mode overrides in `_theme-dark.css`. Use the `[data-theme="d
 
 ---
 
-## Example Themes
-
-### Default Theme
-Clean, modern look with glass effects and subtle gradients.
-
-### Neo-Brutalist Theme
-Bold, sharp edges with high-contrast colors and hard shadows.
-
-### NewTheme (Nature/Organic)
-Earthy tones with forest-inspired colors and soft textures.
-
----
-
 ## Troubleshooting
 
 **Theme not appearing in dropdown?**
@@ -310,16 +297,7 @@ Earthy tones with forest-inspired colors and soft textures.
 - CSS cascade order matters - dark theme must be last
 
 **Icons look wrong?**
-- Ensure PNG icons are 24x24 pixels
+- Ensure PNG icons are square
 - Check filenames match exactly (case-sensitive)
 - For dark mode, icons are auto-inverted
 
----
-
-## Need Help?
-
-If you have questions or want to share your theme:
-- Check the example themes in the app
-- Use the default theme as your starting point
-
-Happy theming! 🎨

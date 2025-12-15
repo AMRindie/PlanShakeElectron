@@ -13,17 +13,17 @@
 
 ## Required Files
 
-| File | Description | Size |
-|------|-------------|------|
-| `main.css` | Entry point, imports all CSS files | ~800 bytes |
-| `_variables.css` | CSS custom properties (colors, spacing) | ~3 KB |
-| `_base.css` | Typography, scrollbars, resets | ~2 KB |
-| `_components.css` | Buttons, inputs, modals, cards | ~40 KB |
-| `_layout.css` | Header, navigation, sidebar | ~12 KB |
-| `_pages.css` | Page-specific styles | ~80 KB |
-| `_responsive.css` | Mobile and tablet styles | ~17 KB |
-| `_theme-dark.css` | Dark mode overrides | ~38 KB |
-| `_contextmenu.css` | Right-click menu styles | ~4 KB |
+| File | Description |
+|------|-------------|
+| `main.css` | Entry point, imports all CSS files |
+| `_variables.css` | CSS custom properties (colors, spacing) |
+| `_base.css` | Typography, scrollbars, resets |
+| `_components.css` | Buttons, inputs, modals, cards |
+| `_layout.css` | Header, navigation, sidebar |
+| `_pages.css` | Page-specific styles |
+| `_responsive.css` | Mobile and tablet styles |
+| `_theme-dark.css` | Dark mode overrides |
+| `_contextmenu.css` | Right-click menu styles |
 
 ---
 
@@ -32,13 +32,12 @@
 | File | Description |
 |------|-------------|
 | `_splash.css` | Splash screen styling |
-| `_effects.css` | Custom animations (Neo-Brutalist uses this) |
 
 ---
 
 ## Icons Folder
 
-Place 24x24 PNG icons in the `icons/` subfolder:
+Place PNG icons in the `icons/` subfolder:
 
 ```
 icons/
